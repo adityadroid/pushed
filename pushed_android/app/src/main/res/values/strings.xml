@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Pushed</string>
+    <string name="notification_listener_label">Pushed Notification Access</string>
+    <string name="notification_listener_description">Allows Pushed to read and forward your notifications to your Apple Watch</string>
+</resources>

@@ -1,0 +1,31 @@
+module.exports = {
+    root: true,
+    env: {
+        es6: true,
+        node: true,
+    },
+    extends: [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+    ],
+    parser: "@typescript-eslint/parser",
+    parserOptions: {
+        project: ["tsconfig.json"],
+        sourceType: "module",
+    },
+    ignorePatterns: [
+        "/lib/**/*",
+        ".eslintrc.js",
+    ],
+    plugins: [
+        "@typescript-eslint",
+    ],
+    rules: {
+        "quotes": ["error", "double"],
+        "indent": ["error", 2],
+        "max-len": ["warn", { "code": 120 }],
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+        "object-curly-spacing": ["error", "always"],
+        "comma-dangle": ["error", "always-multiline"],
+    },
+};

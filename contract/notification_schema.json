@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pushed.app/schemas/notification/v1.0.0",
+  "title": "PushedNotification",
+  "description": "Cross-platform notification payload for the Pushed notification bridge system",
+  "type": "object",
+  "required": ["id", "schemaVersion", "timestamp", "title", "packageName"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the notification (UUID v4)"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0",
+      "description": "Semantic version of the payload schema"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when notification was received on Android"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Notification title text"
+    },
+    "body": {
+      "type": ["string", "null"],
+      "maxLength": 5000,
+      "description": "Notification body/content text"
+    },
+    "packageName": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)*$",
+      "description": "Android package name that posted the notification"
+    },
+    "appName": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "Human-readable application name"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["message", "email", "social", "news", "promo", "reminder", "call", "transport", "alarm", "other"],
+      "default": "other",
+      "description": "Notification category for filtering and grouping"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["min", "low", "default", "high", "max"],
+      "default": "default",
+      "description": "Notification priority level"
+    },
+    "actions": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/definitions/NotificationAction"
+      },
+      "description": "Available action buttons for the notification"
+    },
+    "groupKey": {
+      "type": ["string", "null"],
+      "description": "Key for grouping related notifications together"
+    },
+    "isOngoing": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an ongoing/persistent notification (e.g., music player, download)"
+    },
+    "isSilent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the notification should be delivered silently"
+    },
+    "iconData": {
+      "type": ["string", "null"],
+      "contentEncoding": "base64",
+      "maxLength": 15000,
+      "description": "Base64-encoded PNG app icon (max 10KB decoded)"
+    },
+    "color": {
+      "type": ["string", "null"],
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Accent color in hex format (e.g., #FF5722)"
+    },
+    "subText": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Secondary text displayed below the main content"
+    },
+    "conversationId": {
+      "type": ["string", "null"],
+      "description": "Identifier for messaging conversation threading"
+    },
+    "senderName": {
+      "type": ["string", "null"],
+      "description": "Name of the sender for messaging notifications"
+    }
+  },
+  "definitions": {
+    "NotificationAction": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the action"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Display label for the action button"
+        },
+        "isDestructive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this action is destructive (e.g., delete, dismiss)"
+        },
+        "requiresUnlock": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this action requires device unlock"
+        },
+        "icon": {
+          "type": ["string", "null"],
+          "description": "SF Symbol name (iOS) or Material icon name (Android)"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "schemaVersion": "1.0.0",
+      "timestamp": "2026-02-04T09:00:00Z",
+      "title": "John Doe",
+      "body": "Hey, are you free for lunch today?",
+      "packageName": "com.whatsapp",
+      "appName": "WhatsApp",
+      "category": "message",
+      "priority": "high",
+      "actions": [
+        { "id": "reply", "label": "Reply", "isDestructive": false },
+        { "id": "mark_read", "label": "Mark as Read", "isDestructive": false }
+      ],
+      "conversationId": "chat_12345",
+      "senderName": "John Doe"
+    }
+  ]
+}

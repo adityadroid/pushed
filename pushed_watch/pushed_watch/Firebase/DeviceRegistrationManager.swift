@@ -1,7 +1,7 @@
-import FirebaseMessaging
 import FirebaseAuth
 import FirebaseCore
 import FirebaseFunctions
+import FirebaseMessaging
 import Foundation
 
 /// Manager for device registration with Firebase on watchOS.
@@ -26,7 +26,6 @@ final class DeviceRegistrationManager {
 
   private let authManager: AuthManager
   private let pushDelegate: PushNotificationDelegate
-  private lazy var functions = Functions.functions()
 
   // MARK: - Device Info
 
@@ -83,7 +82,7 @@ final class DeviceRegistrationManager {
       // Call the registerDevice Cloud Function
       // Note: You must deploy a corresponding 'registerDevice' function in your Firebase project
       let result =
-        try await functions
+        try await Functions.functions()
         .httpsCallable("registerDevice")
         .call(deviceData)
 
@@ -116,7 +115,7 @@ final class DeviceRegistrationManager {
 
     do {
       _ =
-        try await functions
+        try await Functions.functions()
         .httpsCallable("unregisterDevice")
         .call(data)
 
@@ -142,7 +141,7 @@ final class DeviceRegistrationManager {
 
     do {
       _ =
-        try await functions
+        try await Functions.functions()
         .httpsCallable("updateDeviceToken")
         .call(data)
 
@@ -164,7 +163,7 @@ final class DeviceRegistrationManager {
 
     do {
       _ =
-        try await functions
+        try await Functions.functions()
         .httpsCallable("deviceHeartbeat")
         .call(data)
     } catch {
@@ -205,4 +204,3 @@ enum DeviceError: LocalizedError {
     }
   }
 }
-

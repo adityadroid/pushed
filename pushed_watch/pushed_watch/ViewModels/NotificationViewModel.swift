@@ -135,6 +135,26 @@ final class NotificationViewModel {
         }
     }
     
+    /// Add a notification received from FCM push.
+    ///
+    /// This is called when a new notification arrives via Firebase Cloud Messaging.
+    /// The notification is added to the local store and UI is updated.
+    func addNotification(_ notification: PushedNotification) {
+        Task {
+            do {
+                // Save to local store
+                try await notificationStore.save(notification)
+                
+                // Insert at the beginning (newest first)
+                if !notifications.contains(where: { $0.id == notification.id }) {
+                    notifications.insert(notification, at: 0)
+                }
+            } catch {
+                errorMessage = "Failed to save notification: \(error.localizedDescription)"
+            }
+        }
+    }
+    
     // MARK: - Private Methods
     
     private func observeSyncUpdates() {

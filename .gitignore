@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android
+*.iml
+.idea/
+local.properties
+.cxx/
+*.hprof
+*.keystore
+
+# Xcode
+*.xcodeproj/project.xcworkspace
+*.xcodeproj/xcuserdata
+*.xcworkspace/
+DerivedData/
+
+# Node
+node_modules/
+npm-debug.log
+firebase-debug.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (Real configs should be ignored, but we act as templates for now)
+# google-services.json
+# GoogleService-Info.plist

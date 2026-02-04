@@ -1,6 +1,6 @@
 # Pushed — Cross-Platform Notification Bridge
 
-A notification bridging system that forwards Android notifications to an Apple Watch.
+A notification bridging system that forwards Android notifications to an Apple Watch via Firebase Cloud Messaging.
 
 ## 🏗 Architecture
 
@@ -9,27 +9,17 @@ A notification bridging system that forwards Android notifications to an Apple W
 │                        PUSHED MONOREPO                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ┌─────────────────────┐         ┌─────────────────────┐       │
-│  │   pushed_android    │         │    pushed_watch     │       │
-│  │   ───────────────   │         │   ───────────────   │       │
-│  │   LISTENER          │         │   RENDERER          │       │
-│  │                     │         │                     │       │
-│  │   • Intercepts      │  JSON   │   • Receives        │       │
-│  │   • Filters         │◄───────►│   • Displays        │       │
-│  │   • Transforms      │ Schema  │   • Manages         │       │
-│  │   • Forwards        │         │   • Archives        │       │
-│  │                     │         │                     │       │
-│  │   Kotlin + Compose  │         │   Swift + SwiftUI   │       │
-│  └─────────────────────┘         └─────────────────────┘       │
-│              │                              │                   │
-│              └──────────────┬───────────────┘                   │
-│                             │                                   │
-│                   ┌─────────▼─────────┐                        │
-│                   │     contract/     │                        │
-│                   │   ─────────────   │                        │
-│                   │   JSON Schema     │                        │
-│                   │   v1.0.0          │                        │
-│                   └───────────────────┘                        │
+│  ┌─────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────┐
+│  │   pushed_android    │     │     pushed_firebase     │     │    pushed_watch     │
+│  │   ───────────────   │     │    ───────────────      │     │   ───────────────   │
+│  │   • Intercept       │     │   • Authenticate        │     │   • Receive         │
+│  │   • Filter          │────►│   • Queue & Store       │────►│   • Display         │
+│  │   • Transform       │     │   • Dispatch via FCM    │     │   • Manage          │
+│  │   • Write to DB     │     │   • Device Registry     │     │   • Archive         │
+│  └─────────────────────┘     └─────────────────────────┘     └─────────────────────┘
+│         LISTENER                   ORCHESTRATOR                    RENDERER
+│                                                                 │
+│                            Shared Contract (JSON Schema)        │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -40,35 +30,20 @@ A notification bridging system that forwards Android notifications to an Apple W
 pushed/
 ├── AGENTS.md                    # AI agent governance & coding standards
 ├── README.md                    # This file
-├── contract/                    # Shared data contract
+├── contract/                    # Shared data contract & JSON Schema
 │   ├── README.md               
-│   └── notification_schema.json # JSON Schema definition
+│   └── notification_schema.json 
 ├── pushed_android/              # Android app (Listener)
 │   ├── README.md               
-│   └── app/                    
-│       └── src/main/           
-│           ├── AndroidManifest.xml
-│           └── java/com/pushed/android/
-│               ├── PushedApplication.kt
-│               ├── di/AppModule.kt
-│               ├── service/
-│               │   ├── PushedNotificationListener.kt
-│               │   └── NotificationFilter.kt
-│               ├── data/
-│               │   ├── model/
-│               │   ├── local/
-│               │   ├── repository/
-│               │   └── preferences/
-│               └── sync/WatchSyncManager.kt
+│   └── app/src/main/java/com/pushed/android/
+├── pushed_firebase/             # Firebase Backend (Orchestrator)
+│   ├── README.md
+│   ├── functions/               # Cloud Functions (TypeScript)
+│   ├── firestore.rules          # Database security rules
+│   └── firebase.json            # Deployment config
 ├── pushed_watch/                # watchOS app (Renderer)
 │   ├── README.md               
-│   └── pushed_watch/           
-│       ├── PushedWatchApp.swift
-│       ├── Models/
-│       ├── Views/
-│       ├── ViewModels/
-│       ├── Services/
-│       └── Complications/
+│   └── pushed_watch/            # Swift/SwiftUI sources
 ├── sample_android.md            # Android guidelines reference
 └── sample_ios.md                # iOS/watchOS guidelines reference
 ```
@@ -82,6 +57,11 @@ pushed/
 - JDK 17+
 - Android SDK API 34
 
+**Firebase Development:**
+- Node.js 20+
+- Firebase CLI (`npm install -g firebase-tools`)
+- Functional Firebase project with Auth, Firestore, and Functions enabled
+
 **watchOS Development:**
 - Xcode 16.0 or later
 - macOS Sonoma or later
@@ -89,13 +69,22 @@ pushed/
 
 ### Building
 
-**Android:**
+**1. Android App:**
 ```bash
 cd pushed_android
 ./gradlew assembleDemoDebug
 ```
 
-**watchOS:**
+**2. Firebase Backend:**
+```bash
+cd pushed_firebase/functions
+npm install
+npm run build
+# Deploy to Firebase
+firebase deploy
+```
+
+**3. watchOS App:**
 ```bash
 cd pushed_watch
 open pushed_watch.xcodeproj
@@ -104,7 +93,7 @@ open pushed_watch.xcodeproj
 
 ## 📋 Shared Contract
 
-Both apps communicate using a JSON-based notification schema:
+All components communicate using a standardized JSON-based notification schema:
 
 ```json
 {
@@ -127,18 +116,25 @@ See [`contract/notification_schema.json`](contract/notification_schema.json) for
 
 ## 📖 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [AGENTS.md](AGENTS.md) | AI agent governance, coding standards, sync protocols |
-| [contract/README.md](contract/README.md) | Shared schema documentation |
-| [pushed_android/README.md](pushed_android/README.md) | Android app documentation |
-| [pushed_watch/README.md](pushed_watch/README.md) | watchOS app documentation |
+| Component      | Document                                               | Description                                           |
+| -------------- | ------------------------------------------------------ | ----------------------------------------------------- |
+| **Governance** | [AGENTS.md](AGENTS.md)                                 | AI agent governance, coding standards, sync protocols |
+| **Shared**     | [contract/README.md](contract/README.md)               | Shared schema documentation                           |
+| **Android**    | [pushed_android/README.md](pushed_android/README.md)   | Android app documentation                             |
+| **Backend**    | [pushed_firebase/README.md](pushed_firebase/README.md) | Firebase orchestrator documentation                   |
+| **Watch**      | [pushed_watch/README.md](pushed_watch/README.md)       | watchOS app documentation                             |
 
 ## 🧪 Testing
 
 **Android:**
 ```bash
 ./gradlew :pushed_android:testDemoDebugUnitTest
+```
+
+**Firebase:**
+```bash
+cd pushed_firebase/functions
+npm run test
 ```
 
 **watchOS:**

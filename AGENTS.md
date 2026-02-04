@@ -16,7 +16,8 @@ This document establishes the governance rules, coding standards, and synchroniz
 8. [Testing Guidelines](#testing-guidelines)
 9. [Security & Privacy](#security--privacy)
 10. [Traceability & Execution Logging](#traceability--execution-logging)
-11. [AGENTS.md Governance](#agentsmd-governance)
+11. [Proactive Skill Acquisition](#proactive-skill-acquisition)
+12. [AGENTS.md Governance](#agentsmd-governance)
 12. [Operational Protocols](#operational-protocols)
 
 ---
@@ -996,6 +997,165 @@ Use the template at `plans/template.md` as the starting point for all plan docum
 
 ---
 
+## Proactive Skill Acquisition
+
+> **Effective Date:** 2026-02-04  
+> **Version:** 1.0.0
+
+This section establishes the protocol for **Autonomous Skill Development** — the process by which AI agents identify repetitive or complex patterns and formalize them into reusable "Skills." Skills are discrete, well-documented workflows that improve efficiency, ensure consistency, and preserve knowledge across sessions.
+
+### Skills Directory Structure
+
+```
+skills/
+├── README.md           # Overview and guidelines
+├── TEMPLATE.md         # Standard template for new skills
+└── [skill-name]/       # Individual skill folders
+    ├── SKILL.md        # Main instruction file (required)
+    ├── scripts/        # Helper scripts (optional)
+    ├── examples/       # Reference implementations (optional)
+    └── resources/      # Templates, assets, configs (optional)
+```
+
+### Pattern Recognition Criteria
+
+Agents SHOULD evaluate creating a new skill when ANY of the following conditions are met:
+
+| Condition                 | Description                                                          |
+| ------------------------- | -------------------------------------------------------------------- |
+| **Multi-Step Complexity** | Task requires more than 3 sequential steps to complete               |
+| **Repetition Likelihood** | Task is likely to be repeated in future sessions                     |
+| **Error-Prone Pattern**   | Task involves steps that are easy to forget or execute incorrectly   |
+| **Cross-Session Value**   | Knowledge would be lost between agent sessions without documentation |
+| **Standardization Need**  | Task would benefit from a consistent, repeatable approach            |
+
+### Skill Creation Requirements
+
+Every new skill MUST adhere to the following standards:
+
+#### 1. Modular Architecture
+
+- Skills are created as **discrete, self-contained units** in the `/skills` directory
+- Each skill resides in its own folder with a descriptive kebab-case name
+- The `SKILL.md` file is **required** and serves as the main instruction file
+- Helper scripts, examples, and resources are organized in subdirectories
+
+```
+skills/firebase-deploy-functions/
+├── SKILL.md              # Required: main instructions
+├── scripts/
+│   └── deploy.sh         # Helper script
+└── examples/
+    └── sample-config.json
+```
+
+#### 2. Self-Documentation
+
+Every `SKILL.md` file MUST include:
+
+| Section            | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| **Frontmatter**    | YAML block with name, description, version, created date |
+| **Overview**       | Brief description of purpose and use cases               |
+| **Input**          | Table of all parameters with types and descriptions      |
+| **Output**         | Table of expected outputs/results                        |
+| **Prerequisites**  | Dependencies, environment requirements                   |
+| **Steps**          | Ordered list of actions to perform                       |
+| **Error Handling** | Common failure modes and recovery strategies             |
+| **Changelog**      | Version history of skill modifications                   |
+
+**Example Frontmatter:**
+
+```yaml
+---
+name: "Firebase Deploy Functions"
+description: "Deploy Cloud Functions to Firebase with pre-deployment validation"
+created: "2026-02-04"
+version: "1.0.0"
+author: "AI Agent"
+---
+```
+
+#### 3. Quality Standards
+
+| Standard               | Requirement                                            |
+| ---------------------- | ------------------------------------------------------ |
+| **Single Purpose**     | Each skill focuses on one well-defined task            |
+| **Testable**           | Includes verification steps to confirm success         |
+| **Idempotent**         | Running multiple times produces consistent results     |
+| **Error-Resilient**    | Documents failure modes and provides recovery guidance |
+| **Version-Controlled** | Changes tracked in skill changelog                     |
+
+### Proactive Suggestion Protocol
+
+> 🤖 **Autonomous Authorization**: Agents are **authorized** to create skills proactively without prior permission.
+
+When an agent identifies a valid opportunity to optimize workflow:
+
+1. **Evaluate** the pattern against the Pattern Recognition Criteria
+2. **Create** the skill following the Skill Creation Requirements
+3. **Test** the skill to verify it works correctly
+4. **Notify** the user with the following format:
+
+```
+✅ I have created a new skill [Skill Name] to handle [Task] more efficiently.
+
+📁 Location: /skills/[skill-folder]/
+📝 Purpose: [Brief description of what the skill does]
+🔧 Use Case: [When to use this skill]
+```
+
+### Skill Lifecycle
+
+| Phase           | Action                                                  |
+| --------------- | ------------------------------------------------------- |
+| **Creation**    | Agent identifies pattern, creates skill, notifies user  |
+| **Usage**       | Agent checks `/skills` before starting related tasks    |
+| **Maintenance** | Agent updates skill when improvements are identified    |
+| **Deprecation** | Agent marks skill as deprecated when no longer relevant |
+
+### Using Existing Skills
+
+Before starting any task, agents SHOULD:
+
+1. **Check the `/skills` directory** for relevant existing skills
+2. **Read the `SKILL.md`** file to understand the skill's capabilities
+3. **Follow the documented steps** exactly as specified
+4. **Reference examples** when available for complex skills
+
+```bash
+# Quick check for available skills
+ls skills/
+```
+
+### Skill Categories
+
+| Category            | Description                     | Example Skills                     |
+| ------------------- | ------------------------------- | ---------------------------------- |
+| **Build**           | Compilation and packaging       | android-build, ios-archive         |
+| **Deploy**          | Deployment workflows            | firebase-deploy, testflight-upload |
+| **Generate**        | Code generation and scaffolding | generate-model, create-viewmodel   |
+| **Validate**        | Testing and validation          | run-tests, lint-code               |
+| **Documentation**   | Doc generation and updates      | update-readme, generate-api-docs   |
+| **Synchronization** | Cross-platform data sync        | sync-schema, migrate-contract      |
+
+### Integration with Plans
+
+When creating a significant skill:
+
+1. Create a plan document in `/plans` with skill creation details
+2. Reference the skill in relevant future plan documents
+3. Update the skill's changelog when modifications are made
+
+### Enforcement
+
+- Agents are **encouraged** but not required to create skills
+- Poor-quality skills MAY be flagged for improvement by reviewers
+- Skills that violate security or privacy guidelines MUST be removed
+- Duplicate skills SHOULD be consolidated into a single canonical version
+
+---
+
 ## AGENTS.md Governance
 
 > **Effective Date:** 2026-02-04  
@@ -1406,7 +1566,7 @@ The following scenarios **exempt** agents from automatic commit behavior:
 
 | Version | Date       | Changes                                                                                       |
 | ------- | ---------- | --------------------------------------------------------------------------------------------- |
-| 1.4.0   | 2026-02-04 | Added Operational Protocols section for autonomous task finalization and automated commits    |
+| 1.4.0   | 2026-02-04 | Added Proactive Skill Acquisition protocol for autonomous skill development                   |
 | 1.3.0   | 2026-02-04 | Added Mandatory Synchronization Rule for keeping AGENTS.md aligned with architectural changes |
 | 1.2.0   | 2026-02-04 | Added Firebase Specifics section for `pushed_firebase` middleware component                   |
 | 1.1.0   | 2026-02-04 | Added Traceability & Execution Logging governance rule                                        |

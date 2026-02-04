@@ -248,7 +248,7 @@ class PushedNotificationListener : NotificationListenerService() {
                 id = UUID.randomUUID().toString(),
                 label = action.title?.toString() ?: "Action",
                 isDestructive = false, // Android doesn't have this concept natively
-                requiresUnlock = action.extras.getBoolean(Notification.EXTRA_ALLOW_DURING_SETUP, false).not(),
+                requiresUnlock = action.extras.getBoolean(Notification.EXTRA_SHOW_WHEN, false).not(),
                 icon = null
             )
         } ?: emptyList()

@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import UIKit
 import FirebaseMessaging
 import UserNotifications
@@ -9,6 +10,8 @@ import UserNotifications
 /// devices through the Firebase middleware layer.
 @MainActor
 final class PushNotificationDelegate: NSObject, ObservableObject {
+    var objectWillChange = ObservableObjectPublisher()
+    
     
     // MARK: - Published State
     
@@ -247,3 +250,4 @@ enum PushError: LocalizedError {
         }
     }
 }
+

@@ -1,0 +1,781 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		03DA955A2F33EA71000AE57C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03DA95502F33EA71000AE57C /* GoogleService-Info.plist */; };
+		03DA955B2F33EA71000AE57C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03DA95442F33EA71000AE57C /* Preview Assets.xcassets */; };
+		03DA955C2F33EA71000AE57C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03DA954F2F33EA71000AE57C /* Assets.xcassets */; };
+		03DA955D2F33EA71000AE57C /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953A2F33EA71000AE57C /* AuthManager.swift */; };
+		03DA955E2F33EA71000AE57C /* DeviceRegistrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953E2F33EA71000AE57C /* DeviceRegistrationManager.swift */; };
+		03DA955F2F33EA71000AE57C /* PushNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95402F33EA71000AE57C /* PushNotificationDelegate.swift */; };
+		03DA95602F33EA71000AE57C /* NotificationSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95472F33EA71000AE57C /* NotificationSyncService.swift */; };
+		03DA95612F33EA71000AE57C /* NotificationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95462F33EA71000AE57C /* NotificationStore.swift */; };
+		03DA95622F33EA71000AE57C /* NotificationComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953C2F33EA71000AE57C /* NotificationComplication.swift */; };
+		03DA95632F33EA71000AE57C /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95492F33EA71000AE57C /* NotificationViewModel.swift */; };
+		03DA95642F33EA71000AE57C /* FirebaseConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953F2F33EA71000AE57C /* FirebaseConfiguration.swift */; };
+		03DA95652F33EA71000AE57C /* PushedWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95532F33EA71000AE57C /* PushedWatchApp.swift */; };
+		03DA95662F33EA71000AE57C /* PushedNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95422F33EA71000AE57C /* PushedNotification.swift */; };
+		03DA95672F33EA71000AE57C /* NotificationDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA954C2F33EA71000AE57C /* NotificationDetailView.swift */; };
+		03DA95682F33EA71000AE57C /* NotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA954D2F33EA71000AE57C /* NotificationListView.swift */; };
+		03DA95692F33EA71000AE57C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA954B2F33EA71000AE57C /* ContentView.swift */; };
+		03DA956C2F33EA87000AE57C /* pushed_watchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA956A2F33EA87000AE57C /* pushed_watchTests.swift */; };
+		03DA956D2F33EA87000AE57C /* pushed_watchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA956A2F33EA87000AE57C /* pushed_watchTests.swift */; };
+		03DA95702F33EE07000AE57C /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA956F2F33EE07000AE57C /* FirebaseAnalytics */; };
+		03DA95722F33EE07000AE57C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95712F33EE07000AE57C /* FirebaseAuth */; };
+		03DA95742F33EE07000AE57C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95732F33EE07000AE57C /* FirebaseFirestore */; };
+		03DA95762F33EE07000AE57C /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95752F33EE07000AE57C /* FirebaseMessaging */; };
+		03DA95792F33F11E000AE57C /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95782F33F11E000AE57C /* FirebaseFunctions */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		03DA951A2F33E985000AE57C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 03DA94FE2F33E982000AE57C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 03DA95092F33E982000AE57C;
+			remoteInfo = "pushed Watch App";
+		};
+		03DA95242F33E985000AE57C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 03DA94FE2F33E982000AE57C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 03DA95092F33E982000AE57C;
+			remoteInfo = "pushed Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		03DA950A2F33E982000AE57C /* pushed Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "pushed Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		03DA95192F33E985000AE57C /* pushed Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "pushed Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		03DA95232F33E985000AE57C /* pushed Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "pushed Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		03DA953A2F33EA71000AE57C /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		03DA953C2F33EA71000AE57C /* NotificationComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationComplication.swift; sourceTree = "<group>"; };
+		03DA953E2F33EA71000AE57C /* DeviceRegistrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceRegistrationManager.swift; sourceTree = "<group>"; };
+		03DA953F2F33EA71000AE57C /* FirebaseConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseConfiguration.swift; sourceTree = "<group>"; };
+		03DA95402F33EA71000AE57C /* PushNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationDelegate.swift; sourceTree = "<group>"; };
+		03DA95422F33EA71000AE57C /* PushedNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushedNotification.swift; sourceTree = "<group>"; };
+		03DA95442F33EA71000AE57C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		03DA95462F33EA71000AE57C /* NotificationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationStore.swift; sourceTree = "<group>"; };
+		03DA95472F33EA71000AE57C /* NotificationSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSyncService.swift; sourceTree = "<group>"; };
+		03DA95492F33EA71000AE57C /* NotificationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewModel.swift; sourceTree = "<group>"; };
+		03DA954B2F33EA71000AE57C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		03DA954C2F33EA71000AE57C /* NotificationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDetailView.swift; sourceTree = "<group>"; };
+		03DA954D2F33EA71000AE57C /* NotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationListView.swift; sourceTree = "<group>"; };
+		03DA954F2F33EA71000AE57C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		03DA95502F33EA71000AE57C /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		03DA95512F33EA71000AE57C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		03DA95522F33EA71000AE57C /* pushed_watch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = pushed_watch.entitlements; sourceTree = "<group>"; };
+		03DA95532F33EA71000AE57C /* PushedWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushedWatchApp.swift; sourceTree = "<group>"; };
+		03DA956A2F33EA87000AE57C /* pushed_watchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pushed_watchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		03DA95072F33E982000AE57C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03DA95762F33EE07000AE57C /* FirebaseMessaging in Frameworks */,
+				03DA95702F33EE07000AE57C /* FirebaseAnalytics in Frameworks */,
+				03DA95792F33F11E000AE57C /* FirebaseFunctions in Frameworks */,
+				03DA95722F33EE07000AE57C /* FirebaseAuth in Frameworks */,
+				03DA95742F33EE07000AE57C /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		03DA95162F33E985000AE57C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		03DA95202F33E985000AE57C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		03DA94FD2F33E982000AE57C = {
+			isa = PBXGroup;
+			children = (
+				03DA95052F33E982000AE57C /* Products */,
+				03DA95542F33EA71000AE57C /* pushed_watch */,
+				03DA956B2F33EA87000AE57C /* pushed_watchTests */,
+				03DA95772F33EE9B000AE57C /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		03DA95052F33E982000AE57C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				03DA950A2F33E982000AE57C /* pushed Watch App.app */,
+				03DA95192F33E985000AE57C /* pushed Watch AppTests.xctest */,
+				03DA95232F33E985000AE57C /* pushed Watch AppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		03DA953B2F33EA71000AE57C /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				03DA953A2F33EA71000AE57C /* AuthManager.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		03DA953D2F33EA71000AE57C /* Complications */ = {
+			isa = PBXGroup;
+			children = (
+				03DA953C2F33EA71000AE57C /* NotificationComplication.swift */,
+			);
+			path = Complications;
+			sourceTree = "<group>";
+		};
+		03DA95412F33EA71000AE57C /* Firebase */ = {
+			isa = PBXGroup;
+			children = (
+				03DA953E2F33EA71000AE57C /* DeviceRegistrationManager.swift */,
+				03DA953F2F33EA71000AE57C /* FirebaseConfiguration.swift */,
+				03DA95402F33EA71000AE57C /* PushNotificationDelegate.swift */,
+			);
+			path = Firebase;
+			sourceTree = "<group>";
+		};
+		03DA95432F33EA71000AE57C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				03DA95422F33EA71000AE57C /* PushedNotification.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		03DA95452F33EA71000AE57C /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				03DA95442F33EA71000AE57C /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		03DA95482F33EA71000AE57C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				03DA95462F33EA71000AE57C /* NotificationStore.swift */,
+				03DA95472F33EA71000AE57C /* NotificationSyncService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		03DA954A2F33EA71000AE57C /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				03DA95492F33EA71000AE57C /* NotificationViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		03DA954E2F33EA71000AE57C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				03DA954B2F33EA71000AE57C /* ContentView.swift */,
+				03DA954C2F33EA71000AE57C /* NotificationDetailView.swift */,
+				03DA954D2F33EA71000AE57C /* NotificationListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		03DA95542F33EA71000AE57C /* pushed_watch */ = {
+			isa = PBXGroup;
+			children = (
+				03DA953B2F33EA71000AE57C /* Auth */,
+				03DA953D2F33EA71000AE57C /* Complications */,
+				03DA95412F33EA71000AE57C /* Firebase */,
+				03DA95432F33EA71000AE57C /* Models */,
+				03DA95452F33EA71000AE57C /* Preview Content */,
+				03DA95482F33EA71000AE57C /* Services */,
+				03DA954A2F33EA71000AE57C /* ViewModels */,
+				03DA954E2F33EA71000AE57C /* Views */,
+				03DA954F2F33EA71000AE57C /* Assets.xcassets */,
+				03DA95502F33EA71000AE57C /* GoogleService-Info.plist */,
+				03DA95512F33EA71000AE57C /* Info.plist */,
+				03DA95522F33EA71000AE57C /* pushed_watch.entitlements */,
+				03DA95532F33EA71000AE57C /* PushedWatchApp.swift */,
+			);
+			path = pushed_watch;
+			sourceTree = "<group>";
+		};
+		03DA956B2F33EA87000AE57C /* pushed_watchTests */ = {
+			isa = PBXGroup;
+			children = (
+				03DA956A2F33EA87000AE57C /* pushed_watchTests.swift */,
+			);
+			path = pushed_watchTests;
+			sourceTree = "<group>";
+		};
+		03DA95772F33EE9B000AE57C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		03DA95092F33E982000AE57C /* pushed Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 03DA952D2F33E985000AE57C /* Build configuration list for PBXNativeTarget "pushed Watch App" */;
+			buildPhases = (
+				03DA95062F33E982000AE57C /* Sources */,
+				03DA95072F33E982000AE57C /* Frameworks */,
+				03DA95082F33E982000AE57C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "pushed Watch App";
+			packageProductDependencies = (
+				03DA956F2F33EE07000AE57C /* FirebaseAnalytics */,
+				03DA95712F33EE07000AE57C /* FirebaseAuth */,
+				03DA95732F33EE07000AE57C /* FirebaseFirestore */,
+				03DA95752F33EE07000AE57C /* FirebaseMessaging */,
+				03DA95782F33F11E000AE57C /* FirebaseFunctions */,
+			);
+			productName = "pushed Watch App";
+			productReference = 03DA950A2F33E982000AE57C /* pushed Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		03DA95182F33E985000AE57C /* pushed Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 03DA95342F33E985000AE57C /* Build configuration list for PBXNativeTarget "pushed Watch AppTests" */;
+			buildPhases = (
+				03DA95152F33E985000AE57C /* Sources */,
+				03DA95162F33E985000AE57C /* Frameworks */,
+				03DA95172F33E985000AE57C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				03DA951B2F33E985000AE57C /* PBXTargetDependency */,
+			);
+			name = "pushed Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "pushed Watch AppTests";
+			productReference = 03DA95192F33E985000AE57C /* pushed Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		03DA95222F33E985000AE57C /* pushed Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 03DA95372F33E985000AE57C /* Build configuration list for PBXNativeTarget "pushed Watch AppUITests" */;
+			buildPhases = (
+				03DA951F2F33E985000AE57C /* Sources */,
+				03DA95202F33E985000AE57C /* Frameworks */,
+				03DA95212F33E985000AE57C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				03DA95252F33E985000AE57C /* PBXTargetDependency */,
+			);
+			name = "pushed Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "pushed Watch AppUITests";
+			productReference = 03DA95232F33E985000AE57C /* pushed Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		03DA94FE2F33E982000AE57C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					03DA95092F33E982000AE57C = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					03DA95182F33E985000AE57C = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 03DA95092F33E982000AE57C;
+					};
+					03DA95222F33E985000AE57C = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 03DA95092F33E982000AE57C;
+					};
+				};
+			};
+			buildConfigurationList = 03DA95012F33E982000AE57C /* Build configuration list for PBXProject "pushed" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 03DA94FD2F33E982000AE57C;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 03DA95052F33E982000AE57C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				03DA95092F33E982000AE57C /* pushed Watch App */,
+				03DA95182F33E985000AE57C /* pushed Watch AppTests */,
+				03DA95222F33E985000AE57C /* pushed Watch AppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		03DA95082F33E982000AE57C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03DA955A2F33EA71000AE57C /* GoogleService-Info.plist in Resources */,
+				03DA955B2F33EA71000AE57C /* Preview Assets.xcassets in Resources */,
+				03DA955C2F33EA71000AE57C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		03DA95172F33E985000AE57C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		03DA95212F33E985000AE57C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		03DA95062F33E982000AE57C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03DA955D2F33EA71000AE57C /* AuthManager.swift in Sources */,
+				03DA955E2F33EA71000AE57C /* DeviceRegistrationManager.swift in Sources */,
+				03DA955F2F33EA71000AE57C /* PushNotificationDelegate.swift in Sources */,
+				03DA95602F33EA71000AE57C /* NotificationSyncService.swift in Sources */,
+				03DA95612F33EA71000AE57C /* NotificationStore.swift in Sources */,
+				03DA95622F33EA71000AE57C /* NotificationComplication.swift in Sources */,
+				03DA95632F33EA71000AE57C /* NotificationViewModel.swift in Sources */,
+				03DA95642F33EA71000AE57C /* FirebaseConfiguration.swift in Sources */,
+				03DA95652F33EA71000AE57C /* PushedWatchApp.swift in Sources */,
+				03DA95662F33EA71000AE57C /* PushedNotification.swift in Sources */,
+				03DA95672F33EA71000AE57C /* NotificationDetailView.swift in Sources */,
+				03DA95682F33EA71000AE57C /* NotificationListView.swift in Sources */,
+				03DA95692F33EA71000AE57C /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		03DA95152F33E985000AE57C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03DA956C2F33EA87000AE57C /* pushed_watchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		03DA951F2F33E985000AE57C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03DA956D2F33EA87000AE57C /* pushed_watchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		03DA951B2F33E985000AE57C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 03DA95092F33E982000AE57C /* pushed Watch App */;
+			targetProxy = 03DA951A2F33E985000AE57C /* PBXContainerItemProxy */;
+		};
+		03DA95252F33E985000AE57C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 03DA95092F33E982000AE57C /* pushed Watch App */;
+			targetProxy = 03DA95242F33E985000AE57C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		03DA952B2F33E985000AE57C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		03DA952C2F33E985000AE57C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		03DA952E2F33E985000AE57C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = pushed;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adityadroid.pushed;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		03DA952F2F33E985000AE57C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = pushed;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adityadroid.pushed;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
+		03DA95352F33E985000AE57C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.adityadroid.pushed-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/pushed Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/pushed Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		03DA95362F33E985000AE57C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.adityadroid.pushed-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/pushed Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/pushed Watch App";
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
+		03DA95382F33E985000AE57C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.adityadroid.pushed-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "pushed Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		03DA95392F33E985000AE57C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TB9U4Q786J;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.adityadroid.pushed-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "pushed Watch App";
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		03DA95012F33E982000AE57C /* Build configuration list for PBXProject "pushed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				03DA952B2F33E985000AE57C /* Debug */,
+				03DA952C2F33E985000AE57C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		03DA952D2F33E985000AE57C /* Build configuration list for PBXNativeTarget "pushed Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				03DA952E2F33E985000AE57C /* Debug */,
+				03DA952F2F33E985000AE57C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		03DA95342F33E985000AE57C /* Build configuration list for PBXNativeTarget "pushed Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				03DA95352F33E985000AE57C /* Debug */,
+				03DA95362F33E985000AE57C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		03DA95372F33E985000AE57C /* Build configuration list for PBXNativeTarget "pushed Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				03DA95382F33E985000AE57C /* Debug */,
+				03DA95392F33E985000AE57C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		03DA956F2F33EE07000AE57C /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		03DA95712F33EE07000AE57C /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		03DA95732F33EE07000AE57C /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		03DA95752F33EE07000AE57C /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		03DA95782F33F11E000AE57C /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 03DA94FE2F33E982000AE57C /* Project object */;
+}

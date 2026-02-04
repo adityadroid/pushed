@@ -165,6 +165,45 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     static func == (lhs: PushedNotification, rhs: PushedNotification) -> Bool {
         lhs.id == rhs.id
     }
+    
+    /// Memberwise initializer for manual construction
+    init(id: UUID,
+         schemaVersion: String,
+         timestamp: Date,
+         title: String,
+         body: String?,
+         packageName: String,
+         appName: String?,
+         category: NotificationCategory,
+         priority: NotificationPriority,
+         actions: [NotificationAction],
+         groupKey: String?,
+         isOngoing: Bool,
+         isSilent: Bool,
+         iconData: String?,
+         color: String?,
+         subText: String?,
+         conversationId: String?,
+         senderName: String?) {
+        self.id = id
+        self.schemaVersion = schemaVersion
+        self.timestamp = timestamp
+        self.title = title
+        self.body = body
+        self.packageName = packageName
+        self.appName = appName
+        self.category = category
+        self.priority = priority
+        self.actions = actions
+        self.groupKey = groupKey
+        self.isOngoing = isOngoing
+        self.isSilent = isSilent
+        self.iconData = iconData
+        self.color = color
+        self.subText = subText
+        self.conversationId = conversationId
+        self.senderName = senderName
+    }
 }
 
 // MARK: - Supporting Types

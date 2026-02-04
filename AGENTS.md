@@ -156,23 +156,11 @@ docs/contract-schema-v2
 
 ### NotificationListenerService Guidelines
 
-```kotlin
-// REQUIRED: Extend NotificationListenerService
-class PushedNotificationListener : NotificationListenerService() {
-    
-    // MUST handle notification posted
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
-        // Extract notification data
-        // Transform to shared contract format
-        // Forward to watchOS
-    }
-    
-    // MUST handle notification removed
-    override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        // Notify watchOS of dismissal
-    }
-}
-```
+**Implementation Helper:**
+Refer to `NotificationListenerService` documentation. The service must:
+1. Extend `NotificationListenerService`.
+2. Handle `onNotificationPosted` to intercept and forward notifications.
+3. Handle `onNotificationRemoved` to sync dismissals.
 
 **Critical Requirements:**
 
@@ -189,65 +177,31 @@ class PushedNotificationListener : NotificationListenerService() {
 ### Background Processing & Battery Optimization
 
 **Doze Mode Compliance:**
-
-```kotlin
-// ❌ NEVER: Schedule exact alarms for non-critical tasks
-// ✅ ALWAYS: Use WorkManager with appropriate constraints
-
-val notificationSyncWork = OneTimeWorkRequestBuilder<NotificationSyncWorker>()
-    .setConstraints(
-        Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
-            .build()
-    )
-    .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-    .build()
-```
+- ❌ NEVER: Schedule exact alarms for non-critical tasks
+- ✅ ALWAYS: Use WorkManager with appropriate constraints (`CONNECTED`, `NOT_LOW` battery).
 
 **Battery Optimization Rules:**
-
-- Batch network requests when possible
-- Use `JobScheduler` or `WorkManager` for deferrable tasks
-- Respect battery saver mode — check `PowerManager.isPowerSaveMode()`
-- Use efficient serialization (prefer Protobuf over JSON for high-frequency data)
-- Minimize wake locks; release immediately after use
+- Batch network requests.
+- Use `WorkManager` for deferrable tasks.
+- Respect battery saver mode.
+- Minimize wake locks.
 
 ### Foreground Service Requirements
 
-```kotlin
-// For persistent notification listener
-val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-    .setContentTitle("Pushed Active")
-    .setContentText("Listening for notifications")
-    .setSmallIcon(R.drawable.ic_notification)
-    .setOngoing(true)
-    .setCategory(NotificationCompat.CATEGORY_SERVICE)
-    .setPriority(NotificationCompat.PRIORITY_LOW)
-    .build()
-
-startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-```
+**Foreground Service Requirements:**
+- Must show a persistent notification.
+- Use `FOREGROUND_SERVICE_TYPE_SPECIAL_USE`.
 
 ### Permission Handling
 
-```kotlin
-// Required permissions in AndroidManifest.xml
-<uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Android 13+ -->
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+**Required Permissions:**
+- `BIND_NOTIFICATION_LISTENER_SERVICE`
+- `POST_NOTIFICATIONS` (Android 13+)
+- `FOREGROUND_SERVICE` & `FOREGROUND_SERVICE_SPECIAL_USE`
+- `INTERNET`
+- `RECEIVE_BOOT_COMPLETED`
 
-// Runtime permission flow
-suspend fun checkAndRequestPermissions(): PermissionState {
-    // 1. Check notification listener access
-    // 2. Request POST_NOTIFICATIONS for Android 13+
-    // 3. Check battery optimization exemption
-    // 4. Return comprehensive permission state
-}
-```
+Ensure runtime permission flows guide the user to System Settings when necessary.
 
 ### Build Commands
 
@@ -358,77 +312,25 @@ users/
 
 ### Security Rules
 
-```javascript
-// Key security constraints:
-// 1. All operations require authentication
-// 2. Users can only access their own data (user-isolated)
-// 3. Device FCM tokens are protected
-// 4. Notification validation enforced
-
-match /users/{userId} {
-  allow read, write: if request.auth != null && request.auth.uid == userId;
-  
-  match /devices/{deviceId} {
-    allow read, write: if request.auth != null && request.auth.uid == userId;
-  }
-  
-  match /notifications/{notificationId} {
-    allow read, write: if request.auth != null && request.auth.uid == userId;
-    // Validates required fields and schema version
-  }
-}
-```
+**Security Constraints:**
+1. All operations require authentication (`request.auth != null`).
+2. Users can only access their own data (`request.auth.uid == userId`).
+3. Device FCM tokens are protected.
+4. Notification inputs must be validated.
 
 ### Cloud Function Guidelines
 
-```typescript
-// ALWAYS: Use v2 Cloud Functions syntax
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { onCall, HttpsError } from "firebase-functions/v2/https";
-
-// ALWAYS: Specify region and resource limits
-export const onNotificationCreated = onDocumentCreated(
-    {
-        document: "users/{userId}/notifications/{notificationId}",
-        region: "us-central1",
-        memory: "256MiB",
-        timeoutSeconds: 60,
-    },
-    async (event) => { /* ... */ }
-);
-
-// ALWAYS: Validate authentication in callable functions
-export const registerDevice = onCall(
-    { region: "us-central1" },
-    async (request) => {
-        if (!request.auth) {
-            throw new HttpsError("unauthenticated", "Authentication required");
-        }
-        // ...
-    }
-);
-```
+**Best Practices:**
+- ALWAYS: Use v2 Cloud Functions syntax (`firebase-functions/v2`).
+- ALWAYS: Specify region (`us-central1` recommended) and resource limits.
+- ALWAYS: Validate authentication in callable functions.
 
 ### Error Handling
 
-```typescript
-// ✅ ALWAYS: Log errors with context
-logger.error("Error dispatching notification", {
-    error,
-    notificationId,
-    userId,
-});
-
-// ✅ ALWAYS: Update document with error status
-await docRef.update({
-    dispatchError: error.message,
-    dispatchedAt: admin.firestore.FieldValue.serverTimestamp(),
-});
-
-// ✅ ALWAYS: Clean up invalid FCM tokens
-// When sendToDevice returns messaging/registration-token-not-registered
-await deviceRef.delete();
-```
+**Error Handling Standards:**
+- Log errors with context (`userId`, `notificationId`).
+- Update documents with error status (e.g., `dispatchError`).
+- Clean up invalid FCM tokens automatically.
 
 ### Build Commands
 
@@ -500,122 +402,39 @@ firebase functions:log
 
 ### SwiftUI Lifecycle Guidelines
 
-```swift
-// ALWAYS: Mark @Observable classes with @MainActor
-@MainActor
-@Observable
-final class NotificationViewModel {
-    var notifications: [PushedNotification] = []
-    var isLoading = false
-    
-    func fetchNotifications() async {
-        isLoading = true
-        // Fetch logic
-        isLoading = false
-    }
-}
-
-// PREFER: Separate view structs over computed properties
-struct NotificationRow: View {
-    let notification: PushedNotification
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(notification.title)
-                .bold()
-            Text(notification.body)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-```
+**State Management:**
+- Mark `@Observable` classes with `@MainActor`.
+- Separate logic (ViewModel) from UI (View).
+- Use `Task` and `async/await` for asynchronous operations.
 
 ### Complications Support
 
-```swift
-// Provide timeline entries for complications
-struct NotificationComplicationProvider: TimelineProvider {
-    func placeholder(in context: Context) -> NotificationEntry {
-        NotificationEntry(date: Date(), count: 0)
-    }
-    
-    func getSnapshot(in context: Context, completion: @escaping (NotificationEntry) -> Void) {
-        completion(NotificationEntry(date: Date(), count: 3))
-    }
-    
-    func getTimeline(in context: Context, completion: @escaping (Timeline<NotificationEntry>) -> Void) {
-        // Generate timeline with notification counts
-    }
-}
-```
+**Complications:**
+- Implement `TimelineProvider`.
+- Provide placeholder and snapshot entries.
+- Efficiently update the timeline to reflect unread counts.
 
 ### Efficient Networking on Wearable Hardware
 
 **Critical Power Constraints:**
 
-```swift
-// ✅ ALWAYS: Batch requests, minimize frequency
-// ✅ ALWAYS: Use background URLSession for non-urgent sync
-// ✅ ALWAYS: Compress payloads
-// ❌ NEVER: Poll frequently; use push notifications instead
-
-@MainActor
-@Observable
-final class NotificationSyncService {
-    private let session: URLSession
-    
-    init() {
-        let config = URLSessionConfiguration.background(
-            withIdentifier: "com.pushed.sync"
-        )
-        config.isDiscretionary = true // Let system optimize timing
-        config.sessionSendsLaunchEvents = true
-        self.session = URLSession(configuration: config)
-    }
-    
-    func sync() async throws {
-        // Use WatchConnectivity for iPhone-Watch communication
-        // when iPhone is reachable
-    }
-}
-```
+**Power Constraints:**
+- ✅ ALWAYS: Batch requests, minimize frequency.
+- ✅ ALWAYS: Use background `URLSession` for non-urgent sync.
+- ❌ NEVER: Poll frequently; use push notifications instead.
 
 **WatchConnectivity Best Practices:**
 
-```swift
-// Prefer application context for state synchronization
-// Use transferUserInfo for queued, guaranteed delivery
-// Use sendMessage only when Watch app is active and reachable
-
-class ConnectivityManager: NSObject, WCSessionDelegate {
-    func session(
-        _ session: WCSession,
-        didReceiveApplicationContext applicationContext: [String: Any]
-    ) {
-        // Handle incoming notification data
-        // Parse using shared contract
-    }
-}
-```
+**WatchConnectivity Best Practices:**
+- `updateApplicationContext`: For latest state sync (overwrites previous).
+- `transferUserInfo`: For queued, guaranteed delivery.
+- `sendMessage`: Only for interactive, immediate communication when reachable.
 
 ### Navigation & Layout
 
-```swift
-// ALWAYS: Use NavigationStack with navigationDestination
-NavigationStack {
-    List(notifications) { notification in
-        NavigationLink(value: notification) {
-            NotificationRow(notification: notification)
-        }
-    }
-    .navigationDestination(for: PushedNotification.self) { notification in
-        NotificationDetailView(notification: notification)
-    }
-}
-
-// AVOID: GeometryReader when alternatives exist
-// PREFER: containerRelativeFrame() for responsive sizing
-```
+**Navigation Rules:**
+- ALWAYS: Use `NavigationStack` with `navigationDestination`.
+- PREFER: `containerRelativeFrame()` over `GeometryReader` for responsive sizing.
 
 ### Build Commands
 
@@ -640,126 +459,21 @@ swiftlint --config .swiftlint.yml
 
 ### Notification Payload Schema (v1.0.0)
 
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "PushedNotification",
-  "type": "object",
-  "required": ["id", "schemaVersion", "timestamp", "title", "packageName"],
-  "properties": {
-    "id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Unique identifier for the notification"
-    },
-    "schemaVersion": {
-      "type": "string",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the payload schema"
-    },
-    "timestamp": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO 8601 timestamp when notification was received"
-    },
-    "title": {
-      "type": "string",
-      "description": "Notification title"
-    },
-    "body": {
-      "type": "string",
-      "description": "Notification body text"
-    },
-    "packageName": {
-      "type": "string",
-      "description": "Android package name or iOS bundle identifier"
-    },
-    "appName": {
-      "type": "string",
-      "description": "Human-readable application name"
-    },
-    "category": {
-      "type": "string",
-      "enum": ["message", "email", "social", "news", "promo", "reminder", "call", "other"],
-      "description": "Notification category for filtering"
-    },
-    "priority": {
-      "type": "string",
-      "enum": ["min", "low", "default", "high", "max"],
-      "description": "Notification priority level"
-    },
-    "actions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "label"],
-        "properties": {
-          "id": { "type": "string" },
-          "label": { "type": "string" },
-          "isDestructive": { "type": "boolean" }
-        }
-      },
-      "description": "Available actions for the notification"
-    },
-    "groupKey": {
-      "type": "string",
-      "description": "Key for grouping related notifications"
-    },
-    "isOngoing": {
-      "type": "boolean",
-      "description": "Whether this is an ongoing/persistent notification"
-    },
-    "iconData": {
-      "type": "string",
-      "contentEncoding": "base64",
-      "description": "Base64-encoded app icon (optional, max 10KB)"
-    }
-  }
-}
-```
+**Notification Payload Schema (v1.0.0)**
+See `shared/contract` for the authoritative schema.
+Key fields: `id` (UUID), `schemaVersion`, `timestamp`, `title`, `packageName`, `category`, `actions`.
 
 ### Platform-Specific Implementations
 
 **Android (Kotlin):**
-```kotlin
-// contract/src/main/kotlin/com/pushed/contract/PushedNotification.kt
-@Serializable
-data class PushedNotification(
-    val id: String,
-    val schemaVersion: String = "1.0.0",
-    val timestamp: Instant,
-    val title: String,
-    val body: String? = null,
-    val packageName: String,
-    val appName: String? = null,
-    val category: NotificationCategory = NotificationCategory.OTHER,
-    val priority: NotificationPriority = NotificationPriority.DEFAULT,
-    val actions: List<NotificationAction> = emptyList(),
-    val groupKey: String? = null,
-    val isOngoing: Boolean = false,
-    val iconData: String? = null
-)
-```
+**Android (Kotlin):**
+Data class `PushedNotification` must be `@Serializable` and match the schema.
+See `PushedNotification.kt`.
 
 **watchOS (Swift):**
-```swift
-// Contract/Sources/PushedNotification.swift
-struct PushedNotification: Codable, Identifiable, Hashable {
-    let id: UUID
-    let schemaVersion: String
-    let timestamp: Date
-    let title: String
-    let body: String?
-    let packageName: String
-    let appName: String?
-    let category: NotificationCategory
-    let priority: NotificationPriority
-    let actions: [NotificationAction]
-    let groupKey: String?
-    let isOngoing: Bool
-    let iconData: String?
-}
-```
+**watchOS (Swift):**
+Struct `PushedNotification` must conform to `Codable`, `Identifiable`, `Hashable`.
+See `PushedNotification.swift`.
 
 ---
 
@@ -793,41 +507,15 @@ struct PushedNotification: Codable, Identifiable, Hashable {
 
 ### Android Testing
 
-```kotlin
-// Unit tests for business logic
-@Test
-fun `notification transformer handles empty body`() {
-    val sbn = mockStatusBarNotification(title = "Test", body = null)
-    val result = transformer.transform(sbn)
-    assertThat(result.body).isNull()
-}
-
-// Integration tests for service
-@Test
-fun `listener service forwards notifications correctly`() {
-    // Use Robolectric or instrumented tests
-}
-```
+**Android Testing:**
+- Use `Robolectric` for unit tests.
+- Use instrumented tests for service lifecycle verification.
 
 ### watchOS Testing
 
-```swift
-// Unit tests with Swift Testing
-@Test func notificationDecoding() throws {
-    let json = """
-    {"id":"123","schemaVersion":"1.0.0","timestamp":"2024-01-01T00:00:00Z","title":"Test","packageName":"com.test"}
-    """
-    let notification = try JSONDecoder().decode(PushedNotification.self, from: Data(json.utf8))
-    #expect(notification.title == "Test")
-}
-
-// View model tests
-@Test func viewModelLoadsNotifications() async {
-    let viewModel = NotificationViewModel()
-    await viewModel.fetchNotifications()
-    #expect(!viewModel.notifications.isEmpty)
-}
-```
+**watchOS Testing:**
+- Use `Swift Testing` (@Test) for modern unit tests.
+- Verify JSON decoding and View Model state changes.
 
 ---
 
@@ -1191,6 +879,15 @@ This section establishes the rules for maintaining the `AGENTS.md` file itself. 
 | Minor refactoring without architecture change | ❌ No                                       |
 | Updating documentation typos                  | ❌ No (unless in AGENTS.md itself)          |
 
+### Anti-Bloat Policy
+
+> ⚠️ **NO CODE SNIPPETS**: `AGENTS.md` is a high-level governance document. Do **NOT** paste implementation code, JSON schemas, or long configuration files here.
+> 
+> **Instead:**
+> - Link to the source file (e.g., `[Reference](pushed_android/.../Service.kt)`)
+> - Link to a sample documentation file (e.g., `[See Sample](sample_android.md)`)
+> - Provide a high-level summary or list of constraints.
+
 ### Update Procedure
 
 When a major change occurs:
@@ -1267,6 +964,7 @@ The following changes to AGENTS.md are **NOT ALLOWED** without explicit human ap
 - ❌ Changing versioning policies
 - ❌ Modifying the contract schema without coordination
 - ❌ Removing mandatory plan documentation requirements
+- ❌ Adding large code snippets (bloat) — Use links or high-level descriptions instead.
 
 ### Allowed Changes by Agents
 

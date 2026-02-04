@@ -53,3 +53,4 @@ This skill acts as the custodian of the `AGENTS.md` file. It encapsulates the go
 - **Clarity and Brevity**: Updates should be precise.
 - **Avoid Redundant Updates**: Do not update `AGENTS.md` for trivial refactors that do not change the functional footprint or governance rules.
 - **Strict Adherence**: Follow the "Allow Changes by Agents" and "Prohibited Changes" rules in `AGENTS.md`.
+- **NO CODE SNIPPETS**: Never add implementation code, JSON schemas, or config files to `AGENTS.md`. Use high-level descriptions or links to source/sample files instead.

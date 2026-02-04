@@ -43,6 +43,7 @@ Use this workflow when:
 5. **Create/Update Specifics Section** for the affected component:
    - Follow the section template from AGENTS.md Governance
    - Include: Role, Technology Stack, Project Structure, Guidelines, Build Commands
+   - **DO NOT** paste code snippets. Use links to source files or high-level summaries.
 
 6. **Update the Change Log**:
    - Increment version appropriately (MAJOR.MINOR.PATCH)

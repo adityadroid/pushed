@@ -49,7 +49,9 @@ Use the following table to determine which files to load based on the domain:
 | `firebase` | `pushed_firebase/AGENTS.md` | `contract/AGENTS.md`      |
 | `watch`    | `pushed_watch/AGENTS.md`    | `contract/AGENTS.md`      |
 | `contract` | `contract/AGENTS.md`        | —                         |
-| `general`  | `docs/STANDARDS.md`         | `docs/PROTOCOLS.md`       |
+| `general`  | —                           | —                         |
+
+> **Note**: `docs/STANDARDS.md` and `docs/PROTOCOLS.md` are **Base Context** and must be loaded for ALL domains.
 
 ---
 
@@ -69,7 +71,15 @@ Identify the domain based on the files you are working with:
 
 ### Step 2: Load Primary Context
 
-Read the primary AGENTS.md file for your domain:
+Read the **mandatory** base context and then the primary AGENTS.md file for your domain:
+
+```bash
+# ALWAYS LOAD FIRST:
+cat docs/STANDARDS.md
+cat docs/PROTOCOLS.md
+```
+
+Then load the domain file:
 
 ```bash
 # For Android
@@ -85,8 +95,7 @@ cat pushed_watch/AGENTS.md
 cat contract/AGENTS.md
 
 # For General
-cat docs/STANDARDS.md
-cat docs/PROTOCOLS.md
+# (Base context is already loaded)
 ```
 
 ### Step 3: Load Secondary Context (if needed)
@@ -97,14 +106,9 @@ For platform domains (`android`, `firebase`, `watch`), also load the contract if
 cat contract/AGENTS.md
 ```
 
-### Step 4: Load Standards & Protocols (if needed)
+### Step 4: Verify Governance
 
-If your work involves cross-platform considerations or governance:
-
-```bash
-cat docs/STANDARDS.md
-cat docs/PROTOCOLS.md
-```
+Ensure you have reviewed `docs/PROTOCOLS.md` (loaded in Step 2) for task finalization and logging rules.
 
 ---
 
@@ -125,8 +129,10 @@ cat docs/PROTOCOLS.md
 ```
 Domain: android
 Files to load:
-  1. pushed_android/AGENTS.md (primary)
-  2. contract/AGENTS.md (if working with notification models)
+  1. docs/STANDARDS.md (Base)
+  2. docs/PROTOCOLS.md (Base)
+  3. pushed_android/AGENTS.md (Primary)
+  4. contract/AGENTS.md (Secondary)
 ```
 
 ### Example 2: Firebase Cloud Functions Task

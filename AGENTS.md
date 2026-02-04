@@ -19,7 +19,8 @@
 
 2. **Read the `load-context` skill**: `skills/load-context/SKILL.md`
 
-3. **Load domain-specific AGENTS.md** from the Context Map below.
+3. **Load Standards & Protocols**: Ensure `docs/STANDARDS.md` and `docs/PROTOCOLS.md` are loaded.
+4. **Load domain-specific AGENTS.md** from the Context Map below.
 
 ---
 
@@ -31,7 +32,9 @@
 | `firebase` | [`pushed_firebase/AGENTS.md`](pushed_firebase/AGENTS.md) | [`contract/AGENTS.md`](contract/AGENTS.md) |
 | `watch`    | [`pushed_watch/AGENTS.md`](pushed_watch/AGENTS.md)       | [`contract/AGENTS.md`](contract/AGENTS.md) |
 | `contract` | [`contract/AGENTS.md`](contract/AGENTS.md)               | —                                          |
-| `general`  | [`docs/STANDARDS.md`](docs/STANDARDS.md)                 | [`docs/PROTOCOLS.md`](docs/PROTOCOLS.md)   |
+| `general`  | —                                                        | —                                          |
+
+> **Note**: `docs/STANDARDS.md` and `docs/PROTOCOLS.md` are **Global/Base Context** and MUST be loaded for ALL domains.
 
 ---
 

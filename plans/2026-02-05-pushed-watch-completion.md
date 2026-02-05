@@ -12,7 +12,7 @@
 | **Task Name**     | pushed-watch-completion |
 | **Date**          | 2026-02-05              |
 | **Agent Session** | Current                 |
-| **Status**        | 🟢 Completed              |
+| **Status**        | 🟢 Completed             |
 
 ### User Prompt/Instruction
 
@@ -85,22 +85,22 @@ The application is a watchOS companion app acting as a "Renderer" for notificati
 
 ### Files Modified
 
-| File Path | Change Type | Description |
-| --------- | ----------- | ----------- |
-| `pushed_watch/pushed_watch/Models/PushedNotification.swift` | Updated | Added schema v1.1.0 fields, action encoding, updated schema version |
-| `pushed_watch/pushed_watch/Models/StoredNotification.swift` | Added | SwiftData persistence model and action codec |
-| `pushed_watch/pushed_watch/Services/NotificationStore.swift` | Updated | SwiftData-backed CRUD, retention, complication snapshot updates |
-| `pushed_watch/pushed_watch/Services/NotificationSyncService.swift` | Updated | Firebase Functions sync, auth checks, device heartbeat |
-| `pushed_watch/pushed_watch/Firebase/PushNotificationDelegate.swift` | Updated | Token callbacks, payload parsing, register for remote notifications |
-| `pushed_watch/pushed_watch/Firebase/DeviceRegistrationManager.swift` | Updated | Skip duplicate registration |
-| `pushed_watch/pushed_watch/Complications/NotificationComplication.swift` | Updated | Read live counts from UserDefaults |
-| `pushed_watch/pushed_watch/ViewModels/NotificationViewModel.swift` | Updated | SwiftData injection, preview container |
-| `pushed_watch/pushed_watch/Views/ContentView.swift` | Updated | User-facing error alerts |
-| `pushed_watch/pushed_watch/Views/NotificationDetailView.swift` | Updated | Preview schema v1.1.0 fields |
-| `pushed_watch/pushed_watch/PushedWatchApp.swift` | Updated | Model container wiring, registration manager, token updates |
-| `pushed_firebase/functions/src/types.ts` | Updated | FCM payload fields for actions/body/sync metadata |
-| `pushed_firebase/functions/src/notifications.ts` | Updated | Include actions/body/metadata in FCM data payload |
-| `pushed_firebase/functions/src/index.ts` | Updated | Callable functions for dismiss/action events |
+| File Path                                                                | Change Type | Description                                                         |
+| ------------------------------------------------------------------------ | ----------- | ------------------------------------------------------------------- |
+| `pushed_watch/pushed_watch/Models/PushedNotification.swift`              | Updated     | Added schema v1.1.0 fields, action encoding, updated schema version |
+| `pushed_watch/pushed_watch/Models/StoredNotification.swift`              | Added       | SwiftData persistence model and action codec                        |
+| `pushed_watch/pushed_watch/Services/NotificationStore.swift`             | Updated     | SwiftData-backed CRUD, retention, complication snapshot updates     |
+| `pushed_watch/pushed_watch/Services/NotificationSyncService.swift`       | Updated     | Firebase Functions sync, auth checks, device heartbeat              |
+| `pushed_watch/pushed_watch/Firebase/PushNotificationDelegate.swift`      | Updated     | Token callbacks, payload parsing, register for remote notifications |
+| `pushed_watch/pushed_watch/Firebase/DeviceRegistrationManager.swift`     | Updated     | Skip duplicate registration                                         |
+| `pushed_watch/pushed_watch/Complications/NotificationComplication.swift` | Updated     | Read live counts from UserDefaults                                  |
+| `pushed_watch/pushed_watch/ViewModels/NotificationViewModel.swift`       | Updated     | SwiftData injection, preview container                              |
+| `pushed_watch/pushed_watch/Views/ContentView.swift`                      | Updated     | User-facing error alerts                                            |
+| `pushed_watch/pushed_watch/Views/NotificationDetailView.swift`           | Updated     | Preview schema v1.1.0 fields                                        |
+| `pushed_watch/pushed_watch/PushedWatchApp.swift`                         | Updated     | Model container wiring, registration manager, token updates         |
+| `pushed_firebase/functions/src/types.ts`                                 | Updated     | FCM payload fields for actions/body/sync metadata                   |
+| `pushed_firebase/functions/src/notifications.ts`                         | Updated     | Include actions/body/metadata in FCM data payload                   |
+| `pushed_firebase/functions/src/index.ts`                                 | Updated     | Callable functions for dismiss/action events                        |
 
 ### New Dependencies Added
 
@@ -111,7 +111,11 @@ The application is a watchOS companion app acting as a "Renderer" for notificati
 ### Commands Executed
 
 ```bash
-# List significant commands run during execution
+# Fixed compilation errors
+# - Resolved visibility issues by moving StoredNotification to NotificationStore.swift
+# - Fixed 'preview' property conflicts in PushedNotification
+# - Added missing 'await' keywords in NotificationStore
+# - Removed public modifiers to match internal scope
 ```
 
 ---

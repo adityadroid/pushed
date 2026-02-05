@@ -177,15 +177,7 @@ final class NotificationViewModel {
 
   /// Preview instance of NotificationViewModel.
   static var previewInstance: NotificationViewModel {
-    let container =
-      (try? ModelContainer(
-        for: StoredNotification.self,
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-      ))
-      ?? (try? ModelContainer(for: StoredNotification.self))
-
-    let resolvedContainer = container ?? (try! ModelContainer(for: StoredNotification.self))
-    let store = NotificationStore(modelContext: resolvedContainer.mainContext)
+    let store = NotificationStore.createPreviewStore()
     let viewModel = NotificationViewModel(
       syncService: NotificationSyncService(),
       notificationStore: store

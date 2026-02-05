@@ -225,6 +225,31 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     self.sourceDeviceId = sourceDeviceId
     self.createdAt = createdAt
   }
+
+  static var preview: PushedNotification {
+    PushedNotification(
+      id: UUID(),
+      schemaVersion: "1.0.0",
+      timestamp: Date(),
+      title: "Preview Notification",
+      body: "This is a preview notification body.",
+      packageName: "com.example.app",
+      appName: "Example App",
+      category: .message,
+      priority: .high,
+      actions: [],
+      groupKey: nil,
+      isOngoing: false,
+      isSilent: false,
+      iconData: nil,
+      color: "#FF0000",
+      subText: nil,
+      conversationId: nil,
+      senderName: "John Doe",
+      sourceDeviceId: "device123",
+      createdAt: Date()
+    )
+  }
 }
 
 // MARK: - Supporting Types

@@ -194,37 +194,3 @@ struct NotificationDetailView: View {
       .environment(NotificationViewModel.previewInstance)
   }
 }
-
-// MARK: - Preview Data
-
-extension PushedNotification {
-  static var preview: PushedNotification {
-    let json = """
-      {
-          "id": "550e8400-e29b-41d4-a716-446655440000",
-          "schemaVersion": "1.1.0",
-          "timestamp": "2026-02-04T09:00:00Z",
-          "title": "John Doe",
-          "body": "Hey, are you free for lunch today? I was thinking we could try that new place downtown.",
-          "packageName": "com.whatsapp",
-          "appName": "WhatsApp",
-          "category": "message",
-          "priority": "high",
-          "actions": [
-              { "id": "reply", "label": "Reply", "isDestructive": false },
-              { "id": "mark_read", "label": "Mark as Read", "isDestructive": false }
-          ],
-          "isOngoing": false,
-          "isSilent": false,
-          "conversationId": "chat_12345",
-          "senderName": "John Doe",
-          "sourceDeviceId": "android_abc123def456",
-          "createdAt": "2026-02-04T09:00:01Z"
-      }
-      """
-
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .iso8601
-    return try! decoder.decode(PushedNotification.self, from: Data(json.utf8))
-  }
-}

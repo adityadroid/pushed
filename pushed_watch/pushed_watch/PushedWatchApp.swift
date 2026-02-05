@@ -1,5 +1,6 @@
 import SwiftUI
 import FirebaseCore
+import SwiftData
 
 /// Main entry point for the Pushed watchOS app.
 ///
@@ -10,15 +11,41 @@ struct PushedWatchApp: App {
     
     // MARK: - State Objects
     
-    @State private var authManager = AuthManager()
-    @State private var viewModel = NotificationViewModel()
-    @State private var pushDelegate = PushNotificationDelegate()
+    @State private var authManager: AuthManager
+    @State private var viewModel: NotificationViewModel
+    @State private var pushDelegate: PushNotificationDelegate
+    @State private var registrationManager: DeviceRegistrationManager
+
+    private let modelContainer: ModelContainer
     
     // MARK: - Initialization
     
     init() {
         // Configure Firebase on app launch
         FirebaseConfiguration.shared.configure()
+
+        let authManager = AuthManager()
+        let pushDelegate = PushNotificationDelegate()
+
+        let container = try! ModelContainer(for: StoredNotification.self)
+        let store = NotificationStore(modelContext: container.mainContext)
+        let syncService = NotificationSyncService(
+            deviceIdProvider: { authManager.isAuthenticated ? UserDefaults.standard.string(forKey: "pushed_device_id") : nil }
+        )
+        let viewModel = NotificationViewModel(
+            syncService: syncService,
+            notificationStore: store
+        )
+        let registrationManager = DeviceRegistrationManager(
+            authManager: authManager,
+            pushDelegate: pushDelegate
+        )
+
+        _authManager = State(initialValue: authManager)
+        _pushDelegate = State(initialValue: pushDelegate)
+        _viewModel = State(initialValue: viewModel)
+        _registrationManager = State(initialValue: registrationManager)
+        modelContainer = container
     }
     
     // MARK: - Body
@@ -28,7 +55,9 @@ struct PushedWatchApp: App {
             RootView()
                 .environment(authManager)
                 .environment(viewModel)
+                .environment(registrationManager)
                 .environmentObject(pushDelegate)
+                .modelContainer(modelContainer)
                 .onAppear {
                     setupNotificationHandling()
                 }
@@ -44,6 +73,16 @@ struct PushedWatchApp: App {
                 viewModel.addNotification(notification)
             }
         }
+
+        pushDelegate.onTokenUpdated = { token in
+            Task { @MainActor in
+                if registrationManager.isRegistered {
+                    try? await registrationManager.updateToken(token)
+                } else {
+                    try? await registrationManager.registerDevice()
+                }
+            }
+        }
     }
 }
 
@@ -51,6 +90,7 @@ struct PushedWatchApp: App {
 struct RootView: View {
     
     @Environment(AuthManager.self) private var authManager
+    @Environment(DeviceRegistrationManager.self) private var registrationManager
     
     var body: some View {
         Group {
@@ -66,6 +106,23 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut, value: authManager.authState)
+        .task {
+            await registerDeviceIfNeeded()
+        }
+        .onChange(of: authManager.authState) { _, newState in
+            if case .authenticated = newState {
+                Task { await registerDeviceIfNeeded() }
+            }
+        }
+    }
+
+    private func registerDeviceIfNeeded() async {
+        guard authManager.isAuthenticated else { return }
+        do {
+            try await registrationManager.registerDevice()
+        } catch {
+            registrationManager.lastError = error
+        }
     }
 }
 

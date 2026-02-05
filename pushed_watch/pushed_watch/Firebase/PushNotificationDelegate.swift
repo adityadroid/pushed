@@ -3,6 +3,7 @@ import Combine
 import UIKit
 import FirebaseMessaging
 import UserNotifications
+import WatchKit
 
 /// Delegate for handling Firebase Cloud Messaging on watchOS.
 ///
@@ -21,6 +22,7 @@ final class PushNotificationDelegate: NSObject, ObservableObject {
     // MARK: - Callbacks
     
     var onNotificationReceived: ((PushedNotification) -> Void)?
+    var onTokenUpdated: ((String) -> Void)?
     
     // MARK: - Private
     
@@ -58,8 +60,7 @@ final class PushNotificationDelegate: NSObject, ObservableObject {
                 let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
                 if granted {
                     await MainActor.run {
-                        // Register for remote notifications
-                        // Note: On watchOS, this is handled differently than iOS
+                        WKExtension.shared().registerForRemoteNotifications()
                     }
                 }
             } catch {
@@ -75,6 +76,7 @@ final class PushNotificationDelegate: NSObject, ObservableObject {
             let token = try await Messaging.messaging().token()
             self.fcmToken = token
             print("FCM Token: \(token)")
+            onTokenUpdated?(token)
         } catch {
             print("Failed to fetch FCM token: \(error)")
         }
@@ -103,7 +105,7 @@ extension PushNotificationDelegate: MessagingDelegate {
         
         Task { @MainActor in
             self.fcmToken = token
-            // TODO: Update token in Firestore device registry
+            self.onTokenUpdated?(token)
         }
     }
 }
@@ -148,7 +150,7 @@ extension PushNotificationDelegate: UNUserNotificationCenterDelegate {
     private func handleNotificationPayload(_ userInfo: [AnyHashable: Any]) {
         // Extract notification data from FCM payload
         guard let notificationId = userInfo["notificationId"] as? String,
-              let title = userInfo["title"] as? String ?? (userInfo["aps"] as? [String: Any])?["alert"] as? String,
+              let title = userInfo["title"] as? String ?? extractTitleFromAps(userInfo),
               let packageName = userInfo["packageName"] as? String else {
             print("Invalid notification payload")
             return
@@ -187,6 +189,13 @@ extension PushNotificationDelegate: UNUserNotificationCenterDelegate {
             let categoryString = userInfo["category"] as? String ?? "other"
             let priorityString = userInfo["priority"] as? String ?? "default"
             let timestampString = userInfo["timestamp"] as? String
+            let actions = parseActions(from: userInfo)
+            let sourceDeviceId = userInfo["sourceDeviceId"] as? String
+            let createdAt = parseDate(from: userInfo["createdAt"] as? String)
+            let iconData = userInfo["iconData"] as? String
+            let subText = userInfo["subText"] as? String
+            let isOngoing = parseBool(from: userInfo["isOngoing"])
+            let isSilent = parseBool(from: userInfo["isSilent"])
             
             let timestamp: Date
             if let ts = timestampString {
@@ -205,15 +214,17 @@ extension PushNotificationDelegate: UNUserNotificationCenterDelegate {
                 appName: appName,
                 category: NotificationCategory(rawValue: categoryString) ?? .other,
                 priority: NotificationPriority(rawValue: priorityString) ?? .default,
-                actions: [],
+                actions: actions,
                 groupKey: userInfo["groupKey"] as? String,
-                isOngoing: false,
-                isSilent: false,
-                iconData: nil,
+                isOngoing: isOngoing,
+                isSilent: isSilent,
+                iconData: iconData,
                 color: userInfo["color"] as? String,
-                subText: nil,
+                subText: subText,
                 conversationId: userInfo["conversationId"] as? String,
-                senderName: userInfo["senderName"] as? String
+                senderName: userInfo["senderName"] as? String,
+                sourceDeviceId: sourceDeviceId,
+                createdAt: createdAt
             )
         }
     }
@@ -233,6 +244,36 @@ extension PushNotificationDelegate: UNUserNotificationCenterDelegate {
         }
         return alert["body"] as? String
     }
+
+    private func parseActions(from userInfo: [AnyHashable: Any]) -> [NotificationAction] {
+        if let actionsJson = userInfo["actions"] as? String,
+           let data = actionsJson.data(using: .utf8) {
+            return (try? decoder.decode([NotificationAction].self, from: data)) ?? []
+        }
+
+        if let actionsArray = userInfo["actions"] {
+            if let data = try? JSONSerialization.data(withJSONObject: actionsArray) {
+                return (try? decoder.decode([NotificationAction].self, from: data)) ?? []
+            }
+        }
+
+        return []
+    }
+
+    private func parseDate(from string: String?) -> Date? {
+        guard let string else { return nil }
+        return ISO8601DateFormatter().date(from: string)
+    }
+
+    private func parseBool(from value: Any?) -> Bool {
+        if let boolValue = value as? Bool {
+            return boolValue
+        }
+        if let stringValue = value as? String {
+            return (stringValue as NSString).boolValue
+        }
+        return false
+    }
 }
 
 // MARK: - Errors
@@ -250,4 +291,3 @@ enum PushError: LocalizedError {
         }
     }
 }
-

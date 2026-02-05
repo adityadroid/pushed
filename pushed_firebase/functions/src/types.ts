@@ -105,6 +105,13 @@ export interface FCMPayload {
         priority: string;
         sourceDeviceId: string;
         timestamp: string;
+        body?: string;
+        actions?: string;
+        iconData?: string;
+        subText?: string;
+        isOngoing?: string;
+        isSilent?: string;
+        createdAt?: string;
         groupKey?: string;
         color?: string;
         senderName?: string;

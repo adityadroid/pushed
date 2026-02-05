@@ -21,6 +21,23 @@ struct ContentView: View {
                 NotificationDetailView(notification: notification)
             }
         }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("OK") {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 }
 
@@ -63,5 +80,5 @@ private struct EmptyStateView: View {
 
 #Preview {
     ContentView()
-        .environment(NotificationViewModel())
+        .environment(NotificationViewModel.previewInstance)
 }

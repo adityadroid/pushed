@@ -67,6 +67,10 @@ final class DeviceRegistrationManager {
       throw DeviceError.notAuthenticated
     }
 
+    if isRegistered {
+      return
+    }
+
     // Ensure we have a valid FCM token
     let fcmToken = try await pushDelegate.getToken()
 

@@ -1,4 +1,6 @@
 import Foundation
+import Observation
+import SwiftData
 
 /// Main view model for managing notifications on the watch.
 ///
@@ -50,11 +52,11 @@ final class NotificationViewModel {
   // MARK: - Initialization
 
   init(
-    syncService: NotificationSyncService? = nil,
-    notificationStore: NotificationStore? = nil
+    syncService: NotificationSyncService,
+    notificationStore: NotificationStore
   ) {
-    self.syncService = syncService ?? NotificationSyncService()
-    self.notificationStore = notificationStore ?? NotificationStore()
+    self.syncService = syncService
+    self.notificationStore = notificationStore
 
     Task {
       await loadNotifications()
@@ -158,15 +160,36 @@ final class NotificationViewModel {
   // MARK: - Private Methods
 
   private func observeSyncUpdates() {
-    // In a real implementation, this would observe WatchConnectivity updates
-    // and update notifications accordingly
+    isConnected = syncService.isReachable
+
+    withObservationTracking {
+      _ = syncService.isReachable
+    } onChange: { [weak self] in
+      Task { @MainActor in
+        guard let self else { return }
+        self.isConnected = self.syncService.isReachable
+        self.observeSyncUpdates()
+      }
+    }
   }
 
   // MARK: - Preview Support
 
   /// Preview instance of NotificationViewModel.
   static var previewInstance: NotificationViewModel {
-    let viewModel = NotificationViewModel()
+    let container =
+      (try? ModelContainer(
+        for: StoredNotification.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+      ))
+      ?? (try? ModelContainer(for: StoredNotification.self))
+
+    let resolvedContainer = container ?? (try! ModelContainer(for: StoredNotification.self))
+    let store = NotificationStore(modelContext: resolvedContainer.mainContext)
+    let viewModel = NotificationViewModel(
+      syncService: NotificationSyncService(),
+      notificationStore: store
+    )
     viewModel.notifications = [.preview]
     return viewModel
   }

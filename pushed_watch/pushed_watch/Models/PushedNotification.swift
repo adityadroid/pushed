@@ -65,6 +65,12 @@ struct PushedNotification: Codable, Identifiable, Hashable {
   /// Name of the sender for messaging notifications
   let senderName: String?
 
+  /// Unique identifier of the Android device that sent this notification
+  let sourceDeviceId: String?
+
+  /// Server timestamp when the notification was written to Firestore
+  let createdAt: Date?
+
   // MARK: - Computed Properties
 
   /// Decoded icon image data
@@ -100,6 +106,7 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     case id, schemaVersion, timestamp, title, body, packageName, appName
     case category, priority, actions, groupKey, isOngoing, isSilent
     case iconData, color, subText, conversationId, senderName
+    case sourceDeviceId, createdAt
   }
 
   init(from decoder: Decoder) throws {
@@ -135,6 +142,8 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     subText = try container.decodeIfPresent(String.self, forKey: .subText)
     conversationId = try container.decodeIfPresent(String.self, forKey: .conversationId)
     senderName = try container.decodeIfPresent(String.self, forKey: .senderName)
+    sourceDeviceId = try container.decodeIfPresent(String.self, forKey: .sourceDeviceId)
+    createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
   }
 
   func encode(to encoder: Encoder) throws {
@@ -158,6 +167,8 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     try container.encodeIfPresent(subText, forKey: .subText)
     try container.encodeIfPresent(conversationId, forKey: .conversationId)
     try container.encodeIfPresent(senderName, forKey: .senderName)
+    try container.encodeIfPresent(sourceDeviceId, forKey: .sourceDeviceId)
+    try container.encodeIfPresent(createdAt, forKey: .createdAt)
   }
 
   // MARK: - Hashable
@@ -189,7 +200,9 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     color: String?,
     subText: String?,
     conversationId: String?,
-    senderName: String?
+    senderName: String?,
+    sourceDeviceId: String?,
+    createdAt: Date?
   ) {
     self.id = id
     self.schemaVersion = schemaVersion
@@ -209,6 +222,8 @@ struct PushedNotification: Codable, Identifiable, Hashable {
     self.subText = subText
     self.conversationId = conversationId
     self.senderName = senderName
+    self.sourceDeviceId = sourceDeviceId
+    self.createdAt = createdAt
   }
 }
 
@@ -222,6 +237,10 @@ struct NotificationAction: Codable, Identifiable, Hashable {
   let requiresUnlock: Bool
   let icon: String?
 
+  enum CodingKeys: String, CodingKey {
+    case id, label, isDestructive, requiresUnlock, icon
+  }
+
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     id = try container.decode(String.self, forKey: .id)
@@ -229,6 +248,15 @@ struct NotificationAction: Codable, Identifiable, Hashable {
     isDestructive = try container.decodeIfPresent(Bool.self, forKey: .isDestructive) ?? false
     requiresUnlock = try container.decodeIfPresent(Bool.self, forKey: .requiresUnlock) ?? false
     icon = try container.decodeIfPresent(String.self, forKey: .icon)
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(id, forKey: .id)
+    try container.encode(label, forKey: .label)
+    try container.encode(isDestructive, forKey: .isDestructive)
+    try container.encode(requiresUnlock, forKey: .requiresUnlock)
+    try container.encodeIfPresent(icon, forKey: .icon)
   }
 }
 
@@ -304,7 +332,7 @@ enum NotificationPriority: String, Codable, CaseIterable, Comparable {
 // MARK: - Schema Version
 
 struct SchemaVersion {
-  static let current = "1.0.0"
+  static let current = "1.1.0"
 
   static func isCompatible(_ version: String) -> Bool {
     // Parse major version

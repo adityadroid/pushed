@@ -202,7 +202,7 @@ extension PushedNotification {
     let json = """
       {
           "id": "550e8400-e29b-41d4-a716-446655440000",
-          "schemaVersion": "1.0.0",
+          "schemaVersion": "1.1.0",
           "timestamp": "2026-02-04T09:00:00Z",
           "title": "John Doe",
           "body": "Hey, are you free for lunch today? I was thinking we could try that new place downtown.",
@@ -217,7 +217,9 @@ extension PushedNotification {
           "isOngoing": false,
           "isSilent": false,
           "conversationId": "chat_12345",
-          "senderName": "John Doe"
+          "senderName": "John Doe",
+          "sourceDeviceId": "android_abc123def456",
+          "createdAt": "2026-02-04T09:00:01Z"
       }
       """
 

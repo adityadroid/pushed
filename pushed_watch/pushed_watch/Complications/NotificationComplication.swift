@@ -23,14 +23,15 @@ struct NotificationComplicationProvider: TimelineProvider {
     }
     
     func getTimeline(in context: Context, completion: @escaping (Timeline<NotificationEntry>) -> Void) {
-        // In a real implementation, fetch from NotificationStore
         let currentDate = Date()
-        
-        // TODO: Fetch actual notification count and latest notification
+        let defaults = UserDefaults.standard
+        let count = defaults.integer(forKey: ComplicationKeys.unreadCount)
+        let latestTitle = defaults.string(forKey: ComplicationKeys.latestTitle)
+
         let entry = NotificationEntry(
             date: currentDate,
-            count: 0,
-            latestTitle: nil
+            count: count,
+            latestTitle: latestTitle
         )
         
         // Refresh every 15 minutes
@@ -39,6 +40,11 @@ struct NotificationComplicationProvider: TimelineProvider {
         
         completion(timeline)
     }
+}
+
+private enum ComplicationKeys {
+    static let unreadCount = "pushed_unread_count"
+    static let latestTitle = "pushed_latest_title"
 }
 
 /// Timeline entry for notification complication.

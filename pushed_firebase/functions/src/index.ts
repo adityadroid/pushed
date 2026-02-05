@@ -325,3 +325,77 @@ export const getRegisteredDevices = onCall(
         return { devices };
     }
 );
+
+/**
+ * Callable function to dismiss a notification.
+ *
+ * Called by watchOS clients when a notification is dismissed locally.
+ */
+export const dismissNotification = onCall(
+    {
+        region: "us-central1",
+        memory: "128MiB",
+    },
+    async (request) => {
+        if (!request.auth) {
+            throw new HttpsError("unauthenticated", "Authentication required");
+        }
+
+        const userId = request.auth.uid;
+        const { notificationId } = request.data as { notificationId: string };
+
+        if (!notificationId) {
+            throw new HttpsError("invalid-argument", "Notification ID required");
+        }
+
+        logger.info(`Dismissing notification`, { userId, notificationId });
+
+        const notificationRef = db.doc(`users/${userId}/notifications/${notificationId}`);
+        await notificationRef.delete();
+
+        return { success: true };
+    }
+);
+
+/**
+ * Callable function to handle notification action requests.
+ *
+ * Called by watchOS clients to forward action intent to the backend.
+ */
+export const handleNotificationAction = onCall(
+    {
+        region: "us-central1",
+        memory: "128MiB",
+    },
+    async (request) => {
+        if (!request.auth) {
+            throw new HttpsError("unauthenticated", "Authentication required");
+        }
+
+        const userId = request.auth.uid;
+        const { notificationId, actionId, actionLabel, timestamp } = request.data as {
+            notificationId: string;
+            actionId: string;
+            actionLabel?: string;
+            timestamp?: string;
+        };
+
+        if (!notificationId || !actionId) {
+            throw new HttpsError("invalid-argument", "Notification ID and action ID required");
+        }
+
+        const actionRef = db.collection(`users/${userId}/notificationActions`).doc();
+
+        await actionRef.set({
+            notificationId,
+            actionId,
+            actionLabel: actionLabel ?? null,
+            clientTimestamp: timestamp ?? null,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        logger.info(`Recorded notification action`, { userId, notificationId, actionId });
+
+        return { success: true, actionEventId: actionRef.id };
+    }
+);

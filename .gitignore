@@ -27,5 +27,5 @@ firebase-debug.log
 Thumbs.db
 
 # Secrets (Real configs should be ignored, but we act as templates for now)
-# google-services.json
-# GoogleService-Info.plist
+pushed_android/app/google-services.json
+pushed_watch/pushed_watch/GoogleService-Info.plist

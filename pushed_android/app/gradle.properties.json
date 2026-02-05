@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1006887162914",
+    "project_id": "pushed-adityadroid",
+    "storage_bucket": "pushed-adityadroid.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006887162914:android:707d7a57cbc0334f55e67b",
+        "android_client_info": {
+          "package_name": "com.pushed.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZURKYXgV4t2W5D0cFDa4a_irefrZ0BGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		03DA955A2F33EA71000AE57C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03DA95502F33EA71000AE57C /* GoogleService-Info.plist */; };
+		031AAE6C2F34B2E40078425E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 031AAE6B2F34B2E40078425E /* GoogleService-Info.plist */; };
 		03DA955B2F33EA71000AE57C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03DA95442F33EA71000AE57C /* Preview Assets.xcassets */; };
 		03DA955C2F33EA71000AE57C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03DA954F2F33EA71000AE57C /* Assets.xcassets */; };
 		03DA955D2F33EA71000AE57C /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953A2F33EA71000AE57C /* AuthManager.swift */; };
@@ -50,6 +50,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		031AAE6B2F34B2E40078425E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		03DA950A2F33E982000AE57C /* pushed Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "pushed Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		03DA95192F33E985000AE57C /* pushed Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "pushed Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		03DA95232F33E985000AE57C /* pushed Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "pushed Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,7 +68,6 @@
 		03DA954C2F33EA71000AE57C /* NotificationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDetailView.swift; sourceTree = "<group>"; };
 		03DA954D2F33EA71000AE57C /* NotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationListView.swift; sourceTree = "<group>"; };
 		03DA954F2F33EA71000AE57C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		03DA95502F33EA71000AE57C /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		03DA95512F33EA71000AE57C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		03DA95522F33EA71000AE57C /* pushed_watch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = pushed_watch.entitlements; sourceTree = "<group>"; };
 		03DA95532F33EA71000AE57C /* PushedWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushedWatchApp.swift; sourceTree = "<group>"; };
@@ -205,10 +205,10 @@
 				03DA954A2F33EA71000AE57C /* ViewModels */,
 				03DA954E2F33EA71000AE57C /* Views */,
 				03DA954F2F33EA71000AE57C /* Assets.xcassets */,
-				03DA95502F33EA71000AE57C /* GoogleService-Info.plist */,
 				03DA95512F33EA71000AE57C /* Info.plist */,
 				03DA95522F33EA71000AE57C /* pushed_watch.entitlements */,
 				03DA95532F33EA71000AE57C /* PushedWatchApp.swift */,
+				031AAE6B2F34B2E40078425E /* GoogleService-Info.plist */,
 			);
 			path = pushed_watch;
 			sourceTree = "<group>";
@@ -347,9 +347,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03DA955A2F33EA71000AE57C /* GoogleService-Info.plist in Resources */,
 				03DA955B2F33EA71000AE57C /* Preview Assets.xcassets in Resources */,
 				03DA955C2F33EA71000AE57C /* Assets.xcassets in Resources */,
+				031AAE6C2F34B2E40078425E /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

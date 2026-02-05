@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "pushed-firebase"
-  }
+    "default": "pushed-firebase",
+    "pushed_firebase": "pushed-adityadroid"
+  },
+  "targets": {},
+  "etags": {}
 }

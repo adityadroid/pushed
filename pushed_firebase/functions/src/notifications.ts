@@ -24,6 +24,18 @@ export async function getWatchOSDevices(
   userId: string
 ): Promise<{ id: string; device: RegisteredDevice }[]> {
   const devicesRef = db.collection(`users/${userId}/devices`);
+
+  // DEBUG: Inspect all devices for this user
+  try {
+    const allDevices = await devicesRef.get();
+    logger.info(`[DEBUG] User ${userId} has ${allDevices.size} total active devices.`);
+    allDevices.forEach((doc) => {
+      logger.info(`[DEBUG] Device ${doc.id} content:`, doc.data());
+    });
+  } catch (e) {
+    logger.error(`[DEBUG] Failed to list devices for user ${userId}`, e);
+  }
+
   const snapshot = await devicesRef.where("type", "==", "watchos").get();
 
   const devices: { id: string; device: RegisteredDevice }[] = [];
@@ -44,10 +56,12 @@ export function buildFCMPayload(notification: PushedNotification): FCMPayload {
   const body = notification.body || "New notification";
   const subtitle = notification.appName || notification.packageName;
 
-  // Map priority to APNs priority
-  const apnsPriority = notification.priority === "high" || notification.priority === "max"
-    ? "10"
-    : "5";
+  // APNs rules:
+  // - 'alert' push type MUST have priority 10
+  // - 'background' push type MUST have priority 5
+  // Since we are sending visible notifications (alerts), we must use priority 10.
+  // We only use priority 5 if we were doing a silent background update without user interaction.
+  const apnsPriority = "10";
 
   return {
     notification: {
@@ -85,7 +99,8 @@ export function buildFCMPayload(notification: PushedNotification): FCMPayload {
             body: body,
             subtitle: subtitle,
           },
-          sound: notification.isSilent ? "" : "default",
+          // Only include sound if not silent. APNs handles default sound if "default" is specified.
+          ...(notification.isSilent ? {} : { sound: "default" }),
           "mutable-content": 1,
           "content-available": 1,
         },

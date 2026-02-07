@@ -141,8 +141,11 @@ export const registerDevice = onCall(
     memory: "128MiB",
   },
   async (request) => {
+    logger.info("Received registerDevice request");
+
     // Verify authentication
     if (!request.auth) {
+      logger.error("registerDevice: Unauthenticated request");
       throw new HttpsError("unauthenticated", "Authentication required");
     }
 

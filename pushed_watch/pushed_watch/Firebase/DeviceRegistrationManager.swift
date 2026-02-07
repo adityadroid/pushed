@@ -85,22 +85,22 @@ final class DeviceRegistrationManager {
 
     do {
       // Call the registerDevice Cloud Function
-      // Note: You must deploy a corresponding 'registerDevice' function in your Firebase project
-      let result =
-        try await Functions.functions()
-        .httpsCallable("registerDevice")
-        .call(deviceData)
+      // Explicitly set the region to match the deployed function (us-central1)
+      let functions = Functions.functions(region: "us-central1")
+      let result = try await functions.httpsCallable("registerDevice").call(deviceData)
 
       if let response = result.data as? [String: Any],
         let success = response["success"] as? Bool, success
       {
         isRegistered = true
         lastError = nil
-        print("Device registered successfully via Functions: \(deviceId)")
+        print("✅ Device registered successfully via Cloud Functions: \(deviceId)")
       } else {
+        print("❌ Device registration function returned failure response: \(result.data ?? "nil")")
         throw DeviceError.registrationFailed("Function returned failure")
       }
     } catch {
+      print("❌ Device registration failed with error: \(error)")
       lastError = error
       throw DeviceError.registrationFailed(error.localizedDescription)
     }

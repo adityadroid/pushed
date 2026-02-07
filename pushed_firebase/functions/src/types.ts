@@ -127,7 +127,7 @@ export interface FCMPayload {
                     body: string;
                     subtitle?: string;
                 };
-                sound: string;
+                sound?: string;
                 badge?: number;
                 "mutable-content": number;
                 "content-available": number;

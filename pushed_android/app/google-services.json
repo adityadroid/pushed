@@ -1,29 +1,54 @@
 {
-    "project_info": {
-        "project_number": "000000000000",
-        "project_id": "pushed-app",
-        "storage_bucket": "pushed-app.appspot.com"
-    },
-    "client": [
-        {
-            "client_info": {
-                "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
-                "android_client_info": {
-                    "package_name": "com.pushed.android"
-                }
-            },
-            "oauth_client": [],
-            "api_key": [
-                {
-                    "current_key": "dummy_api_key"
-                }
-            ],
-            "services": {
-                "appinvite_service": {
-                    "other_platform_oauth_client": []
-                }
-            }
+  "project_info": {
+    "project_number": "1006887162914",
+    "project_id": "pushed-adityadroid",
+    "storage_bucket": "pushed-adityadroid.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006887162914:android:707d7a57cbc0334f55e67b",
+        "android_client_info": {
+          "package_name": "com.pushed.android"
         }
-    ],
-    "configuration_version": "1"
+      },
+      "oauth_client": [
+        {
+          "client_id": "1006887162914-kq0eto0e22eiu0ilrblhfebolh0prl8v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pushed.android",
+            "certificate_hash": "688f22d829d2dc7a3cd38e03e26992b841901c59"
+          }
+        },
+        {
+          "client_id": "1006887162914-krpfc1t7oersi70pp7v07r2d5nbgpf7g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZURKYXgV4t2W5D0cFDa4a_irefrZ0BGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1006887162914-krpfc1t7oersi70pp7v07r2d5nbgpf7g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1006887162914-i3po4thp1o6ppup6im2na6qhpssrh31u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.adityadroid.pushed"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }

@@ -8,7 +8,7 @@
 
 ## Core Requirements
 
-- **Target**: watchOS 11.0+
+- **Target**: watchOS 10.0+
 - **Swift Version**: Swift 6.2+
 - **UI Framework**: SwiftUI with `@Observable` for state management
 - **Concurrency**: Modern Swift concurrency (`async`/`await`, `Actor`)

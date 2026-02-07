@@ -28,7 +28,7 @@ pushed_watch/
 
 ## Requirements
 
-- watchOS 11.0+
+- watchOS 10.0+
 - Swift 6.2+
 - Xcode 16.0+
 

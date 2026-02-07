@@ -14,7 +14,7 @@
  * @see /plans/2026-02-04-firebase-orchestrator-implementation.md for architecture
  */
 
-import * as admin from "firebase-admin";
+import { admin, db } from "./firebase";
 import { onDocumentCreated, onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
@@ -25,11 +25,6 @@ import {
   updateDeviceLastSeen,
 } from "./notifications";
 import { PushedNotification, RegisteredDevice, DeviceType } from "./types";
-
-// Initialize Firebase Admin
-admin.initializeApp();
-
-const db = admin.firestore();
 
 /**
  * Triggered when a new notification is created in Firestore.

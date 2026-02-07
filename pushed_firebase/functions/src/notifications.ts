@@ -8,7 +8,7 @@
  * - Cleaning up stale device tokens
  */
 
-import * as admin from "firebase-admin";
+import { db, messaging, admin } from "./firebase";
 import * as logger from "firebase-functions/logger";
 import {
   PushedNotification,
@@ -16,9 +16,6 @@ import {
   FCMPayload,
   FCMBatchResult,
 } from "./types";
-
-const db = admin.firestore();
-const messaging = admin.messaging();
 
 /**
  * Fetch all registered watchOS devices for a user.

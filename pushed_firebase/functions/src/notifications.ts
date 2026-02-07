@@ -169,9 +169,79 @@ export async function sendToWatchOSDevices(
 }
 
 /**
+ * Send deletion command to all registered watchOS devices for a user.
+ */
+export async function sendDeletionToWatchOSDevices(
+  userId: string,
+  notificationId: string
+): Promise<FCMBatchResult> {
+  const devices = await getWatchOSDevices(userId);
+
+  if (devices.length === 0) {
+    logger.info(`No watchOS devices registered for user ${userId}, skipping deletion dispatch`);
+    return { successCount: 0, failureCount: 0, failedTokens: [] };
+  }
+
+  const tokens = devices.map((d) => d.device.fcmToken);
+
+  logger.info(`Sending deletion command to ${tokens.length} watchOS devices`, {
+    notificationId,
+    userId,
+  });
+
+  const payload: admin.messaging.MulticastMessage = {
+    tokens: tokens,
+    data: {
+      action: "delete",
+      notificationId: notificationId,
+    },
+    apns: {
+      payload: {
+        aps: {
+          "content-available": 1,
+        },
+      },
+      headers: {
+        "apns-push-type": "background",
+        "apns-priority": "5",
+      },
+    },
+  };
+
+  try {
+    const response = await messaging.sendEachForMulticast(payload);
+
+    const failedTokens: string[] = [];
+
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        failedTokens.push(tokens[idx]);
+        logger.warn(`Failed to send deletion to token ${tokens[idx].substring(0, 20)}...`, {
+          error: resp.error?.message,
+          code: resp.error?.code,
+        });
+      }
+    });
+
+    if (failedTokens.length > 0) {
+      await cleanupInvalidTokens(userId, devices, failedTokens);
+    }
+
+    return {
+      successCount: response.successCount,
+      failureCount: response.failureCount,
+      failedTokens: failedTokens,
+    };
+  } catch (error) {
+    logger.error("Error sending deletion messages", { error, userId, notificationId });
+    throw error;
+  }
+}
+
+/**
  * Remove invalid/stale FCM tokens from user's device registry.
  */
-async function cleanupInvalidTokens(
+export async function cleanupInvalidTokens(
   userId: string,
   devices: { id: string; device: RegisteredDevice }[],
   failedTokens: string[]

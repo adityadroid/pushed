@@ -102,6 +102,14 @@ final class NotificationViewModel {
     }
   }
 
+  /// Remove a notification by ID (called from remote deletion)
+  func removeNotification(withId id: String) {
+    if let index = notifications.firstIndex(where: { $0.id.uuidString == id }) {
+      let notification = notifications[index]
+      deleteNotification(notification)
+    }
+  }
+
   /// Dismiss a notification (notify Android)
   func dismissNotification(_ notification: PushedNotification) {
     Task {

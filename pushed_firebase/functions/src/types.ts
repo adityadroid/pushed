@@ -76,6 +76,8 @@ export interface RegisteredDevice {
     deviceName: string;
     lastSeen: FirebaseFirestore.Timestamp;
     createdAt: FirebaseFirestore.Timestamp;
+    osVersion?: string;
+    appVersion?: string;
 }
 
 /**

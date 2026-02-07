@@ -19,7 +19,11 @@ import { onDocumentCreated, onDocumentDeleted } from "firebase-functions/v2/fire
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
-import { sendToWatchOSDevices, updateDeviceLastSeen } from "./notifications";
+import {
+  sendToWatchOSDevices,
+  sendDeletionToWatchOSDevices,
+  updateDeviceLastSeen,
+} from "./notifications";
 import { PushedNotification, RegisteredDevice, DeviceType } from "./types";
 
 // Initialize Firebase Admin
@@ -122,10 +126,12 @@ export const onNotificationDeleted = onDocumentDeleted(
 
     logger.info("Notification deleted", { userId, notificationId });
 
-    // Optionally: Send a data-only message to trigger local deletion on watch
-    // This is a silent notification that won't show UI
-    // For now, we'll skip this to keep things simple
-    // Watches can periodically sync to clean up deleted notifications
+    try {
+      // Send a data-only message to trigger local deletion on watch
+      await sendDeletionToWatchOSDevices(userId, notificationId);
+    } catch (error) {
+      logger.error("Error sending deletion command", { error, userId, notificationId });
+    }
   }
 );
 
@@ -146,12 +152,14 @@ export const registerDevice = onCall(
     }
 
     const userId = request.auth.uid;
-    const { deviceId, type, fcmToken, deviceName } = request.data as {
-            deviceId: string;
-            type: DeviceType;
-            fcmToken: string;
-            deviceName: string;
-        };
+    const { deviceId, type, fcmToken, deviceName, osVersion, appVersion } = request.data as {
+      deviceId: string;
+      type: DeviceType;
+      fcmToken: string;
+      deviceName: string;
+      osVersion?: string;
+      appVersion?: string;
+    };
 
     // Validate required fields
     if (!deviceId || !type || !fcmToken || !deviceName) {
@@ -175,6 +183,8 @@ export const registerDevice = onCall(
       createdAt: existingDevice.exists
         ? (existingDevice.data() as RegisteredDevice).createdAt
         : admin.firestore.Timestamp.now(),
+      ...(osVersion && { osVersion }),
+      ...(appVersion && { appVersion }),
     };
 
     await deviceRef.set(deviceData);
@@ -235,9 +245,9 @@ export const updateDeviceToken = onCall(
 
     const userId = request.auth.uid;
     const { deviceId, fcmToken } = request.data as {
-            deviceId: string;
-            fcmToken: string;
-        };
+      deviceId: string;
+      fcmToken: string;
+    };
 
     if (!deviceId || !fcmToken) {
       throw new HttpsError("invalid-argument", "Device ID and FCM token required");
@@ -304,11 +314,11 @@ export const getRegisteredDevices = onCall(
     const snapshot = await devicesRef.get();
 
     const devices: Array<{
-            id: string;
-            type: DeviceType;
-            deviceName: string;
-            lastSeen: number;
-        }> = [];
+      id: string;
+      type: DeviceType;
+      deviceName: string;
+      lastSeen: number;
+    }> = [];
 
     snapshot.forEach((doc) => {
       const data = doc.data() as RegisteredDevice;
@@ -374,11 +384,11 @@ export const handleNotificationAction = onCall(
 
     const userId = request.auth.uid;
     const { notificationId, actionId, actionLabel, timestamp } = request.data as {
-            notificationId: string;
-            actionId: string;
-            actionLabel?: string;
-            timestamp?: string;
-        };
+      notificationId: string;
+      actionId: string;
+      actionLabel?: string;
+      timestamp?: string;
+    };
 
     if (!notificationId || !actionId) {
       throw new HttpsError("invalid-argument", "Notification ID and action ID required");

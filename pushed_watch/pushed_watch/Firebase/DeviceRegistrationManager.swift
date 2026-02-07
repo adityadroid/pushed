@@ -80,6 +80,7 @@ final class DeviceRegistrationManager {
       "fcmToken": fcmToken,
       "deviceName": deviceName,
       "osVersion": getOSVersion(),
+      "appVersion": getAppVersion(),
     ]
 
     do {
@@ -184,6 +185,10 @@ final class DeviceRegistrationManager {
     #else
       return "Unknown"
     #endif
+  }
+
+  private func getAppVersion() -> String {
+    return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
   }
 }
 

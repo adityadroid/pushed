@@ -15,6 +15,7 @@
 		03DA955F2F33EA71000AE57C /* PushNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95402F33EA71000AE57C /* PushNotificationDelegate.swift */; };
 		03DA95602F33EA71000AE57C /* NotificationSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95472F33EA71000AE57C /* NotificationSyncService.swift */; };
 		03DA95612F33EA71000AE57C /* NotificationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95462F33EA71000AE57C /* NotificationStore.swift */; };
+		03DA957A2F35AA00000AE57C /* NotificationFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA957B2F35AA00000AE57C /* NotificationFetcher.swift */; };
 		03DA95622F33EA71000AE57C /* NotificationComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953C2F33EA71000AE57C /* NotificationComplication.swift */; };
 		03DA95632F33EA71000AE57C /* NotificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA95492F33EA71000AE57C /* NotificationViewModel.swift */; };
 		03DA95642F33EA71000AE57C /* FirebaseConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA953F2F33EA71000AE57C /* FirebaseConfiguration.swift */; };
@@ -27,7 +28,6 @@
 		03DA956D2F33EA87000AE57C /* pushed_watchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03DA956A2F33EA87000AE57C /* pushed_watchTests.swift */; };
 		03DA95702F33EE07000AE57C /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA956F2F33EE07000AE57C /* FirebaseAnalytics */; };
 		03DA95722F33EE07000AE57C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95712F33EE07000AE57C /* FirebaseAuth */; };
-		03DA95742F33EE07000AE57C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95732F33EE07000AE57C /* FirebaseFirestore */; };
 		03DA95762F33EE07000AE57C /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95752F33EE07000AE57C /* FirebaseMessaging */; };
 		03DA95792F33F11E000AE57C /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 03DA95782F33F11E000AE57C /* FirebaseFunctions */; };
 /* End PBXBuildFile section */
@@ -63,6 +63,7 @@
 		03DA95442F33EA71000AE57C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		03DA95462F33EA71000AE57C /* NotificationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationStore.swift; sourceTree = "<group>"; };
 		03DA95472F33EA71000AE57C /* NotificationSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSyncService.swift; sourceTree = "<group>"; };
+		03DA957B2F35AA00000AE57C /* NotificationFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationFetcher.swift; sourceTree = "<group>"; };
 		03DA95492F33EA71000AE57C /* NotificationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewModel.swift; sourceTree = "<group>"; };
 		03DA954B2F33EA71000AE57C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		03DA954C2F33EA71000AE57C /* NotificationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDetailView.swift; sourceTree = "<group>"; };
@@ -83,7 +84,6 @@
 				03DA95702F33EE07000AE57C /* FirebaseAnalytics in Frameworks */,
 				03DA95792F33F11E000AE57C /* FirebaseFunctions in Frameworks */,
 				03DA95722F33EE07000AE57C /* FirebaseAuth in Frameworks */,
-				03DA95742F33EE07000AE57C /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +171,7 @@
 			children = (
 				03DA95462F33EA71000AE57C /* NotificationStore.swift */,
 				03DA95472F33EA71000AE57C /* NotificationSyncService.swift */,
+				03DA957B2F35AA00000AE57C /* NotificationFetcher.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -247,7 +248,6 @@
 			packageProductDependencies = (
 				03DA956F2F33EE07000AE57C /* FirebaseAnalytics */,
 				03DA95712F33EE07000AE57C /* FirebaseAuth */,
-				03DA95732F33EE07000AE57C /* FirebaseFirestore */,
 				03DA95752F33EE07000AE57C /* FirebaseMessaging */,
 				03DA95782F33F11E000AE57C /* FirebaseFunctions */,
 			);
@@ -379,6 +379,7 @@
 				03DA955F2F33EA71000AE57C /* PushNotificationDelegate.swift in Sources */,
 				03DA95602F33EA71000AE57C /* NotificationSyncService.swift in Sources */,
 				03DA95612F33EA71000AE57C /* NotificationStore.swift in Sources */,
+				03DA957A2F35AA00000AE57C /* NotificationFetcher.swift in Sources */,
 				03DA95622F33EA71000AE57C /* NotificationComplication.swift in Sources */,
 				03DA95632F33EA71000AE57C /* NotificationViewModel.swift in Sources */,
 				03DA95642F33EA71000AE57C /* FirebaseConfiguration.swift in Sources */,
@@ -759,11 +760,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
-		};
-		03DA95732F33EE07000AE57C /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 03DA956E2F33EE07000AE57C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
 		};
 		03DA95752F33EE07000AE57C /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;

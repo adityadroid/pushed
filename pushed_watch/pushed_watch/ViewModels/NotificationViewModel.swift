@@ -7,6 +7,10 @@ import SwiftData
 /// This class follows modern Swift concurrency patterns and uses
 /// `@Observable` for reactive UI updates. Must be marked with
 /// `@MainActor` per project guidelines.
+///
+/// Supports two modes of operation:
+/// 1. Push-based: Receives notifications via FCM push (requires paid developer account)
+/// 2. Poll-based: Fetches notifications directly from Firestore (no paid account needed)
 @MainActor
 @Observable
 final class NotificationViewModel {
@@ -22,8 +26,19 @@ final class NotificationViewModel {
   /// Current error message, if any
   var errorMessage: String?
 
-  /// Connection state with Android device
+  /// Connection state with Firebase
   var isConnected = false
+
+  /// Last refresh time
+  var lastRefreshTime: Date?
+
+  /// Reference to the notification fetcher (for polling mode)
+  var notificationFetcher: NotificationFetcher?
+
+  /// Whether we're using Firestore polling mode
+  var isPollingMode: Bool {
+    notificationFetcher != nil
+  }
 
   // MARK: - Computed Properties
 
@@ -53,14 +68,29 @@ final class NotificationViewModel {
 
   init(
     syncService: NotificationSyncService,
-    notificationStore: NotificationStore
+    notificationStore: NotificationStore,
+    notificationFetcher: NotificationFetcher? = nil
   ) {
     self.syncService = syncService
     self.notificationStore = notificationStore
+    self.notificationFetcher = notificationFetcher
 
     Task {
       await loadNotifications()
       observeSyncUpdates()
+    }
+  }
+
+  /// Enable Firestore polling mode (for apps without push notification capability).
+  func enablePollingMode(fetcher: NotificationFetcher) {
+    self.notificationFetcher = fetcher
+
+    // Start real-time listening
+    fetcher.startListening()
+
+    // Observe fetcher updates
+    Task {
+      observeFetcherUpdates()
     }
   }
 
@@ -71,33 +101,71 @@ final class NotificationViewModel {
     isLoading = true
     errorMessage = nil
 
-    do {
-      notifications = try await notificationStore.loadAll()
-    } catch {
-      errorMessage = "Failed to load notifications: \(error.localizedDescription)"
+    // If in polling mode, fetch from Firestore
+    if let fetcher = notificationFetcher {
+      do {
+        notifications = try await fetcher.fetchNotifications()
+        lastRefreshTime = Date()
+      } catch {
+        errorMessage = "Failed to load notifications: \(error.localizedDescription)"
+      }
+    } else {
+      // Use local store
+      do {
+        notifications = try await notificationStore.loadAll()
+      } catch {
+        errorMessage = "Failed to load notifications: \(error.localizedDescription)"
+      }
     }
 
     isLoading = false
   }
 
-  /// Refresh notifications from Android device
+  /// Refresh notifications from Firebase
   func refreshNotifications() async {
-    do {
-      try await syncService.requestSync()
-      await loadNotifications()
-    } catch {
-      errorMessage = "Sync failed: \(error.localizedDescription)"
+    isLoading = true
+    errorMessage = nil
+
+    if let fetcher = notificationFetcher {
+      // Poll mode: fetch from Firestore
+      do {
+        notifications = try await fetcher.fetchNotifications()
+        lastRefreshTime = Date()
+      } catch {
+        errorMessage = "Refresh failed: \(error.localizedDescription)"
+      }
+    } else {
+      // Push mode: request sync
+      do {
+        try await syncService.requestSync()
+        await loadNotifications()
+      } catch {
+        errorMessage = "Sync failed: \(error.localizedDescription)"
+      }
     }
+
+    isLoading = false
   }
 
   /// Delete a notification
   func deleteNotification(_ notification: PushedNotification) {
     Task {
-      do {
-        try await notificationStore.delete(notification)
-        notifications.removeAll { $0.id == notification.id }
-      } catch {
-        errorMessage = "Failed to delete: \(error.localizedDescription)"
+      if let fetcher = notificationFetcher {
+        // Poll mode: dismiss from Firestore
+        do {
+          try await fetcher.dismissNotification(notification)
+          notifications.removeAll { $0.id == notification.id }
+        } catch {
+          errorMessage = "Failed to delete: \(error.localizedDescription)"
+        }
+      } else {
+        // Push mode: delete from local store
+        do {
+          try await notificationStore.delete(notification)
+          notifications.removeAll { $0.id == notification.id }
+        } catch {
+          errorMessage = "Failed to delete: \(error.localizedDescription)"
+        }
       }
     }
   }
@@ -110,14 +178,24 @@ final class NotificationViewModel {
     }
   }
 
-  /// Dismiss a notification (notify Android)
+  /// Dismiss a notification (notify Firebase and remove locally)
   func dismissNotification(_ notification: PushedNotification) {
     Task {
-      do {
-        try await syncService.sendDismissal(for: notification.id)
-        deleteNotification(notification)
-      } catch {
-        errorMessage = "Failed to dismiss: \(error.localizedDescription)"
+      if let fetcher = notificationFetcher {
+        // Poll mode: dismiss from Firestore
+        do {
+          try await fetcher.dismissNotification(notification)
+        } catch {
+          errorMessage = "Failed to dismiss: \(error.localizedDescription)"
+        }
+      } else {
+        // Push mode: send dismissal and delete locally
+        do {
+          try await syncService.sendDismissal(for: notification.id)
+          deleteNotification(notification)
+        } catch {
+          errorMessage = "Failed to dismiss: \(error.localizedDescription)"
+        }
       }
     }
   }
@@ -136,11 +214,22 @@ final class NotificationViewModel {
   /// Clear all notifications
   func clearAll() {
     Task {
-      do {
-        try await notificationStore.deleteAll()
-        notifications = []
-      } catch {
-        errorMessage = "Failed to clear: \(error.localizedDescription)"
+      if let fetcher = notificationFetcher {
+        // Poll mode: dismiss all from Firestore
+        do {
+          try await fetcher.dismissAllNotifications()
+          notifications = []
+        } catch {
+          errorMessage = "Failed to clear: \(error.localizedDescription)"
+        }
+      } else {
+        // Push mode: delete all from local store
+        do {
+          try await notificationStore.deleteAll()
+          notifications = []
+        } catch {
+          errorMessage = "Failed to clear: \(error.localizedDescription)"
+        }
       }
     }
   }
@@ -172,11 +261,26 @@ final class NotificationViewModel {
 
     withObservationTracking {
       _ = syncService.isReachable
-    } onChange: { [weak self] in
-      Task { @MainActor in
+    } onChange: {
+      Task { @MainActor [weak self] in
         guard let self else { return }
         self.isConnected = self.syncService.isReachable
         self.observeSyncUpdates()
+      }
+    }
+  }
+
+  private func observeFetcherUpdates() {
+    guard let fetcher = notificationFetcher else { return }
+
+    withObservationTracking {
+      _ = fetcher.notifications
+    } onChange: {
+      Task { @MainActor [weak self] in
+        guard let self, let fetcher = self.notificationFetcher else { return }
+        self.notifications = fetcher.notifications
+        self.lastRefreshTime = fetcher.lastFetchTime
+        self.observeFetcherUpdates()
       }
     }
   }
@@ -190,7 +294,89 @@ final class NotificationViewModel {
       syncService: NotificationSyncService(),
       notificationStore: store
     )
-    viewModel.notifications = [.preview]
+    viewModel.notifications = [PushedNotification.preview]
+    return viewModel
+  }
+
+  /// Preview instance with multiple notifications for testing.
+  static var previewInstanceWithMultipleNotifications: NotificationViewModel {
+    let store = NotificationStore.createPreviewStore()
+    let viewModel = NotificationViewModel(
+      syncService: NotificationSyncService(),
+      notificationStore: store
+    )
+
+    // Create sample notifications
+    let now = Date()
+    viewModel.notifications = [
+      PushedNotification(
+        id: UUID(),
+        schemaVersion: "1.0.0",
+        timestamp: now,
+        title: "New Message from John",
+        body: "Hey! Are you coming to the party tonight? Let me know!",
+        packageName: "com.whatsapp",
+        appName: "WhatsApp",
+        category: .message,
+        priority: .high,
+        actions: [],
+        groupKey: nil,
+        isOngoing: false,
+        isSilent: false,
+        iconData: nil,
+        color: "#25D366",
+        subText: nil,
+        conversationId: nil,
+        senderName: "John Doe",
+        sourceDeviceId: "device123",
+        createdAt: now
+      ),
+      PushedNotification(
+        id: UUID(),
+        schemaVersion: "1.0.0",
+        timestamp: now.addingTimeInterval(-300),
+        title: "Your order has shipped!",
+        body: "Your package is on its way. Track your delivery in the app.",
+        packageName: "com.amazon.mShop.android.shopping",
+        appName: "Amazon",
+        category: .promo,
+        priority: .default,
+        actions: [],
+        groupKey: nil,
+        isOngoing: false,
+        isSilent: false,
+        iconData: nil,
+        color: "#FF9900",
+        subText: nil,
+        conversationId: nil,
+        senderName: nil,
+        sourceDeviceId: "device123",
+        createdAt: now.addingTimeInterval(-300)
+      ),
+      PushedNotification(
+        id: UUID(),
+        schemaVersion: "1.0.0",
+        timestamp: now.addingTimeInterval(-3600),
+        title: "Meeting in 15 minutes",
+        body: "Team standup - Conference Room B",
+        packageName: "com.google.android.calendar",
+        appName: "Calendar",
+        category: .reminder,
+        priority: .high,
+        actions: [],
+        groupKey: nil,
+        isOngoing: false,
+        isSilent: false,
+        iconData: nil,
+        color: "#4285F4",
+        subText: nil,
+        conversationId: nil,
+        senderName: nil,
+        sourceDeviceId: "device123",
+        createdAt: now.addingTimeInterval(-3600)
+      ),
+    ]
+
     return viewModel
   }
 }

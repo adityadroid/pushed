@@ -10,6 +10,12 @@ private let appLogger = Logger(subsystem: "com.pushed.watch", category: "App")
 ///
 /// **Signing Identity**: adityagurjar.it18@gmail.com
 /// **Do NOT use**: a.gurjar@scbank.com.eg
+///
+/// This app supports two notification modes:
+/// 1. **Push Mode**: Receives notifications via FCM push (requires paid Apple Developer account)
+/// 2. **Poll Mode**: Fetches notifications via Cloud Functions (no paid account needed)
+///
+/// Poll mode is enabled by default since we don't have a paid developer account.
 @main
 struct PushedWatchApp: App {
 
@@ -19,8 +25,13 @@ struct PushedWatchApp: App {
   @State private var viewModel: NotificationViewModel
   @State private var pushDelegate: PushNotificationDelegate
   @State private var registrationManager: DeviceRegistrationManager
+  @State private var notificationFetcher: NotificationFetcher
 
   private let modelContainer: ModelContainer
+
+  /// Whether to use polling mode (Cloud Functions) instead of push notifications.
+  /// Set to true when you don't have a paid Apple Developer account.
+  private let usePollingMode = true
 
   // MARK: - Initialization
 
@@ -44,16 +55,24 @@ struct PushedWatchApp: App {
     let container = try! ModelContainer(for: StoredNotification.self)
     appLogger.info("✅ ModelContainer created")
 
+    appLogger.info("🔧 Creating NotificationFetcher...")
+    let notificationFetcher = NotificationFetcher()
+    appLogger.info("✅ NotificationFetcher created")
+
     let store = NotificationStore(modelContext: container.mainContext)
     let syncService = NotificationSyncService(
       deviceIdProvider: {
         authManager.isAuthenticated ? UserDefaults.standard.string(forKey: "pushed_device_id") : nil
       }
     )
+
+    appLogger.info("🔧 Creating NotificationViewModel...")
     let viewModel = NotificationViewModel(
       syncService: syncService,
-      notificationStore: store
+      notificationStore: store,
+      notificationFetcher: usePollingMode ? notificationFetcher : nil
     )
+    appLogger.info("✅ NotificationViewModel created (polling mode: (usePollingMode))")
 
     appLogger.info("🔧 Creating DeviceRegistrationManager...")
     let registrationManager = DeviceRegistrationManager(
@@ -66,6 +85,7 @@ struct PushedWatchApp: App {
     _pushDelegate = State(initialValue: pushDelegate)
     _viewModel = State(initialValue: viewModel)
     _registrationManager = State(initialValue: registrationManager)
+    _notificationFetcher = State(initialValue: notificationFetcher)
     modelContainer = container
 
     appLogger.info("✅ PushedWatchApp init() complete")
@@ -79,6 +99,7 @@ struct PushedWatchApp: App {
         .environment(authManager)
         .environment(viewModel)
         .environment(registrationManager)
+        .environment(notificationFetcher)
         .environmentObject(pushDelegate)
         .modelContainer(modelContainer)
         .onAppear {
@@ -132,6 +153,7 @@ struct RootView: View {
   @Environment(\.scenePhase) private var scenePhase
   @Environment(AuthManager.self) private var authManager
   @Environment(DeviceRegistrationManager.self) private var registrationManager
+  @Environment(NotificationFetcher.self) private var notificationFetcher
 
   var body: some View {
     Group {
@@ -154,6 +176,12 @@ struct RootView: View {
             appLogger.info("📱 Showing content view - user authenticated")
             appLogger.info("   userId: \(userId)")
             appLogger.info("   email: \(email ?? "nil")")
+            // Start real-time listening when authenticated
+            notificationFetcher.startListening()
+          }
+          .onDisappear {
+            // Stop listening when view disappears
+            notificationFetcher.stopListening()
           }
       }
     }
@@ -169,6 +197,11 @@ struct RootView: View {
         appLogger.info("   User is now authenticated with userId: \(userId)")
         appLogger.info("   Triggering registerDeviceIfNeeded()...")
         Task { await registerDeviceIfNeeded() }
+        // Start listening for notifications
+        notificationFetcher.startListening()
+      } else if case .unauthenticated = newState {
+        // Stop listening when logged out
+        notificationFetcher.stopListening()
       }
     }
     .onChange(of: scenePhase) { oldPhase, newPhase in
@@ -177,6 +210,13 @@ struct RootView: View {
       if newPhase == .active {
         appLogger.info("   App became active - triggering registerDeviceIfNeeded()")
         Task { await registerDeviceIfNeeded() }
+        // Resume listening when app becomes active
+        if case .authenticated = authManager.authState {
+          notificationFetcher.startListening()
+        }
+      } else if newPhase == .background {
+        // Stop listening when app goes to background (saves resources)
+        notificationFetcher.stopListening()
       }
     }
   }
@@ -220,14 +260,34 @@ struct LoginView: View {
       VStack(spacing: 16) {
         // Header
         VStack(spacing: 8) {
-          Image(systemName: "bell.badge.fill")
-            .font(.system(size: 40))
-            .foregroundStyle(.blue)
+          // Animated bell icon
+          ZStack {
+            Circle()
+              .fill(
+                LinearGradient(
+                  colors: [.blue.opacity(0.3), .purple.opacity(0.2)],
+                  startPoint: .topLeading,
+                  endPoint: .bottomTrailing
+                )
+              )
+              .frame(width: 70, height: 70)
+
+            Image(systemName: "bell.badge.fill")
+              .font(.system(size: 32))
+              .foregroundStyle(
+                LinearGradient(
+                  colors: [.blue, .purple],
+                  startPoint: .top,
+                  endPoint: .bottom
+                )
+              )
+          }
 
           Text("Pushed")
-            .font(.headline)
+            .font(.title3)
+            .fontWeight(.bold)
 
-          Text("Sign in to receive notifications")
+          Text("Sign in to receive your Android notifications")
             .font(.caption2)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
@@ -259,13 +319,25 @@ struct LoginView: View {
         Button(action: signIn) {
           if isLoading {
             ProgressView()
+              .tint(.white)
           } else {
             Text("Sign In")
+              .fontWeight(.semibold)
               .frame(maxWidth: .infinity)
           }
         }
-        .buttonStyle(.borderedProminent)
+        .padding(.vertical, 12)
+        .background(
+          LinearGradient(
+            colors: [.blue, .blue.opacity(0.8)],
+            startPoint: .leading,
+            endPoint: .trailing
+          )
+        )
+        .foregroundStyle(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
         .disabled(isLoading || email.isEmpty || password.isEmpty)
+        .opacity(email.isEmpty || password.isEmpty ? 0.6 : 1)
 
         // Create account button
         Button("Create Account") {
@@ -346,18 +418,31 @@ struct CreateAccountView: View {
         Button(action: createAccount) {
           if isLoading {
             ProgressView()
+              .tint(.white)
           } else {
             Text("Create Account")
+              .fontWeight(.semibold)
               .frame(maxWidth: .infinity)
           }
         }
-        .buttonStyle(.borderedProminent)
+        .padding(.vertical, 12)
+        .background(
+          LinearGradient(
+            colors: [.green, .green.opacity(0.8)],
+            startPoint: .leading,
+            endPoint: .trailing
+          )
+        )
+        .foregroundStyle(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
         .disabled(isLoading || email.isEmpty || !passwordsMatch)
+        .opacity(email.isEmpty || !passwordsMatch ? 0.6 : 1)
 
         Button("Cancel") {
           dismiss()
         }
         .font(.caption)
+        .foregroundStyle(.secondary)
       }
       .padding()
     }
@@ -384,4 +469,5 @@ struct CreateAccountView: View {
 #Preview {
   RootView()
     .environment(AuthManager())
+    .environment(NotificationFetcher())
 }

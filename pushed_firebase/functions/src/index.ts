@@ -358,6 +358,9 @@ export const getRegisteredDevices = onCall(
  * Callable function to dismiss a notification.
  *
  * Called by watchOS clients when a notification is dismissed locally.
+ * 
+ * Note: watchOS may not properly propagate auth tokens to Cloud Functions,
+ * so we accept userId in the request data as a fallback.
  */
 export const dismissNotification = onCall(
   {
@@ -365,12 +368,18 @@ export const dismissNotification = onCall(
     memory: "128MiB",
   },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Authentication required");
-    }
+    const { userId: requestUserId, notificationId } = request.data as {
+      userId?: string;
+      notificationId: string;
+    };
 
-    const userId = request.auth.uid;
-    const { notificationId } = request.data as { notificationId: string };
+    // Use auth.uid if available, otherwise fall back to userId from request data
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      logger.error("dismissNotification: No userId available from auth or request data");
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
 
     if (!notificationId) {
       throw new HttpsError("invalid-argument", "Notification ID required");
@@ -382,6 +391,124 @@ export const dismissNotification = onCall(
     await notificationRef.delete();
 
     return { success: true };
+  }
+);
+
+/**
+ * Callable function to get all notifications for a user.
+ *
+ * Called by watchOS clients to fetch notifications since Firestore SDK
+ * is not available on watchOS. This provides a polling alternative to
+ * push notifications.
+ *
+ * Note: watchOS may not properly propagate auth tokens to Cloud Functions,
+ * so we accept userId in the request data as a fallback.
+ */
+export const getNotifications = onCall(
+  {
+    region: "us-central1",
+    memory: "256MiB",
+  },
+  async (request) => {
+    const { userId: requestUserId, limit: requestLimit } = request.data as {
+      userId?: string;
+      limit?: number;
+    };
+
+    // Use auth.uid if available, otherwise fall back to userId from request data
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      logger.error("getNotifications: No userId available from auth or request data");
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
+
+    const limit = requestLimit ?? 100;
+
+    logger.info("Fetching notifications", { userId, limit });
+
+    const notificationsRef = db
+      .collection(`users/${userId}/notifications`)
+      .orderBy("timestamp", "desc")
+      .limit(limit);
+
+    const snapshot = await notificationsRef.get();
+
+    const notifications = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        // Convert Firestore Timestamps to ISO strings for JSON serialization
+        timestamp: data.timestamp?.toDate?.()?.toISOString() ?? data.timestamp,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt,
+      };
+    });
+
+    logger.info("Fetched notifications", { userId, count: notifications.length });
+
+    return { notifications };
+  }
+);
+
+/**
+ * Callable function to dismiss all notifications for a user.
+ *
+ * Called by watchOS clients to clear all notifications at once.
+ *
+ * Note: watchOS may not properly propagate auth tokens to Cloud Functions,
+ * so we accept userId in the request data as a fallback.
+ */
+export const dismissAllNotifications = onCall(
+  {
+    region: "us-central1",
+    memory: "256MiB",
+  },
+  async (request) => {
+    const { userId: requestUserId } = request.data as {
+      userId?: string;
+    };
+
+    // Use auth.uid if available, otherwise fall back to userId from request data
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      logger.error("dismissAllNotifications: No userId available from auth or request data");
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
+
+    logger.info("Dismissing all notifications", { userId });
+
+    const notificationsRef = db.collection(`users/${userId}/notifications`);
+    const snapshot = await notificationsRef.get();
+
+    // Delete in batches to avoid overwhelming Firestore
+    const batchSize = 500;
+    const batches: FirebaseFirestore.WriteBatch[] = [];
+    let currentBatch = db.batch();
+    let operationCount = 0;
+
+    for (const doc of snapshot.docs) {
+      currentBatch.delete(doc.ref);
+      operationCount++;
+
+      if (operationCount >= batchSize) {
+        batches.push(currentBatch);
+        currentBatch = db.batch();
+        operationCount = 0;
+      }
+    }
+
+    if (operationCount > 0) {
+      batches.push(currentBatch);
+    }
+
+    // Execute all batches
+    await Promise.all(batches.map((batch) => batch.commit()));
+
+    logger.info("Deleted all notifications", { userId, count: snapshot.docs.length });
+
+    return { success: true, deletedCount: snapshot.docs.length };
   }
 );
 

@@ -283,6 +283,21 @@ struct NotificationAction: Codable, Identifiable, Hashable {
     try container.encode(requiresUnlock, forKey: .requiresUnlock)
     try container.encodeIfPresent(icon, forKey: .icon)
   }
+
+  /// Memberwise initializer for manual construction.
+  init(
+    id: String,
+    label: String,
+    isDestructive: Bool = false,
+    requiresUnlock: Bool = false,
+    icon: String? = nil
+  ) {
+    self.id = id
+    self.label = label
+    self.isDestructive = isDestructive
+    self.requiresUnlock = requiresUnlock
+    self.icon = icon
+  }
 }
 
 /// Notification category matching the shared contract.

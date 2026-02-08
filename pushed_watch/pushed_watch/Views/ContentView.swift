@@ -28,6 +28,14 @@ struct ContentView: View {
         NotificationDetailView(notification: notification)
       }
       .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button {
+            refreshNotifications()
+          } label: {
+            Label("Refresh", systemImage: "arrow.clockwise")
+          }
+        }
+
         if !viewModel.notifications.isEmpty {
           ToolbarItem(placement: .topBarTrailing) {
             Button(role: .destructive) {

@@ -104,28 +104,84 @@ final class NotificationFetcher {
     }
   }
 
+  private var pollingTask: Task<Void, Never>?
+
   /// Start polling for notifications (simulates real-time updates).
   ///
-  /// Since we can't use Firestore's real-time listeners on watchOS,
-  /// this just does an initial fetch. For true real-time updates,
-  /// you would implement a polling timer.
+  /// This implements a dynamic polling strategy:
+  /// - 12 AM - 7 AM: Quiet hours (no refresh)
+  /// - 7 AM - 9 AM: 60s (Early morning)
+  /// - 9 AM - 6 PM: 10s (Peak hours)
+  /// - 6 PM - 10 PM: 30s (Evening)
+  /// - 10 PM - 12 AM: 60s (Late night)
   func startListening() {
-    logger.info("👂 Starting notification listener (polling mode)")
+    logger.info("👂 Starting notification listener (Dynamic polling mode)")
 
-    Task {
-      do {
-        _ = try await fetchNotifications()
-      } catch {
-        logger.error("❌ Initial fetch failed: \(error.localizedDescription)")
-        lastError = error
+    // Stop any existing polling
+    stopListening()
+
+    // Start a new polling task
+    pollingTask = Task {
+      while !Task.isCancelled {
+        if let interval = calculateRefreshInterval() {
+          do {
+            logger.info("⏰ Polling fetch started (Interval: \(interval)s)")
+            _ = try await fetchNotifications()
+          } catch {
+            logger.error("❌ Polling fetch failed: \(error.localizedDescription)")
+            lastError = error
+          }
+
+          // Wait for the calculated interval
+          do {
+            try await Task.sleep(nanoseconds: UInt64(interval) * 1_000_000_000)
+          } catch {
+            break
+          }
+        } else {
+          // During quiet hours (12 AM - 7 AM), check again in 5 minutes
+          logger.info("🌙 Quiet hours (12 AM - 7 AM): Polling suspended")
+          do {
+            try await Task.sleep(nanoseconds: 5 * 60 * 1_000_000_000)
+          } catch {
+            break
+          }
+        }
       }
+      logger.info("👂 Notification listener task ended")
     }
   }
 
-  /// Stop listening (no-op in polling mode).
+  /// Stop listening (cancels the polling loop).
   func stopListening() {
     logger.info("🛑 Stopping notification listener")
-    // No-op since we're not using real-time listeners
+    pollingTask?.cancel()
+    pollingTask = nil
+  }
+
+  /// Calculates the refresh interval based on the current time of day.
+  /// Returns nil during quiet hours (12 AM - 7 AM).
+  private func calculateRefreshInterval() -> TimeInterval? {
+    let hour = Calendar.current.component(.hour, from: Date())
+
+    // 1. Quiet Hours: 12 AM to 7 AM
+    if hour >= 0 && hour < 7 {
+      return nil
+    }
+
+    // 2. Active Hours Strategy
+    switch hour {
+    case 7..<9:
+      return 60  // Early morning: Low activity
+    case 9..<18:
+      return 10  // Work hours: High activity (Peak)
+    case 18..<22:
+      return 30  // Evening: Medium activity
+    case 22..<24:
+      return 60  // Late night: Low activity
+    default:
+      return 60
+    }
   }
 
   /// Dismiss a notification (delete from Firebase via Cloud Function).

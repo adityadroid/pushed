@@ -152,6 +152,7 @@ struct RootView: View {
 
   @Environment(\.scenePhase) private var scenePhase
   @Environment(AuthManager.self) private var authManager
+  @Environment(NotificationViewModel.self) private var viewModel
   @Environment(DeviceRegistrationManager.self) private var registrationManager
   @Environment(NotificationFetcher.self) private var notificationFetcher
 
@@ -176,8 +177,10 @@ struct RootView: View {
             appLogger.info("📱 Showing content view - user authenticated")
             appLogger.info("   userId: \(userId)")
             appLogger.info("   email: \(email ?? "nil")")
-            // Start real-time listening when authenticated
-            notificationFetcher.startListening()
+            // Start real-time listening when authenticated (only in polling mode)
+            if viewModel.isPollingMode {
+              notificationFetcher.startListening()
+            }
           }
           .onDisappear {
             // Stop listening when view disappears
@@ -197,8 +200,10 @@ struct RootView: View {
         appLogger.info("   User is now authenticated with userId: \(userId)")
         appLogger.info("   Triggering registerDeviceIfNeeded()...")
         Task { await registerDeviceIfNeeded() }
-        // Start listening for notifications
-        notificationFetcher.startListening()
+        // Start listening for notifications (only in polling mode)
+        if viewModel.isPollingMode {
+          notificationFetcher.startListening()
+        }
       } else if case .unauthenticated = newState {
         // Stop listening when logged out
         notificationFetcher.stopListening()
@@ -210,8 +215,8 @@ struct RootView: View {
       if newPhase == .active {
         appLogger.info("   App became active - triggering registerDeviceIfNeeded()")
         Task { await registerDeviceIfNeeded() }
-        // Resume listening when app becomes active
-        if case .authenticated = authManager.authState {
+        // Resume listening when app becomes active (only in polling mode)
+        if case .authenticated = authManager.authState, viewModel.isPollingMode {
           notificationFetcher.startListening()
         }
       } else if newPhase == .background {

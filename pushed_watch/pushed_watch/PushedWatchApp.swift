@@ -93,6 +93,7 @@ struct PushedWatchApp: App {
 /// Root view that handles authentication state.
 struct RootView: View {
 
+  @Environment(\.scenePhase) private var scenePhase
   @Environment(AuthManager.self) private var authManager
   @Environment(DeviceRegistrationManager.self) private var registrationManager
 
@@ -115,6 +116,11 @@ struct RootView: View {
     }
     .onChange(of: authManager.authState) { _, newState in
       if case .authenticated = newState {
+        Task { await registerDeviceIfNeeded() }
+      }
+    }
+    .onChange(of: scenePhase) { _, newPhase in
+      if newPhase == .active {
         Task { await registerDeviceIfNeeded() }
       }
     }

@@ -16,9 +16,6 @@ final class DeviceRegistrationManager {
 
   // MARK: - State
 
-  /// Whether the device is currently registered
-  var isRegistered = false
-
   /// Last registration error if any
   var lastError: Error?
 
@@ -62,14 +59,13 @@ final class DeviceRegistrationManager {
   /// Register this device for push notifications.
   ///
   /// Must be called after successful authentication.
+  /// This will create or update the device registration in Firestore.
   func registerDevice() async throws {
     guard authManager.currentUserId != nil else {
       throw DeviceError.notAuthenticated
     }
 
-    if isRegistered {
-      return
-    }
+    // Always attempt to register/update device details
 
     // Ensure we have a valid FCM token
     let fcmToken = try await pushDelegate.getToken()
@@ -92,9 +88,8 @@ final class DeviceRegistrationManager {
       if let response = result.data as? [String: Any],
         let success = response["success"] as? Bool, success
       {
-        isRegistered = true
         lastError = nil
-        print("✅ Device registered successfully via Cloud Functions: \(deviceId)")
+        print("✅ Device registered/updated successfully via Cloud Functions: \(deviceId)")
       } else {
         print("❌ Device registration function returned failure response: \(result.data ?? "nil")")
         throw DeviceError.registrationFailed("Function returned failure")
@@ -124,7 +119,6 @@ final class DeviceRegistrationManager {
         .httpsCallable("unregisterDevice")
         .call(data)
 
-      isRegistered = false
       print("Device unregistered via Functions: \(deviceId)")
     } catch {
       throw DeviceError.unregistrationFailed(error.localizedDescription)
@@ -158,7 +152,7 @@ final class DeviceRegistrationManager {
 
   /// Send a heartbeat to update lastSeen timestamp.
   func sendHeartbeat() async {
-    guard authManager.currentUserId != nil, isRegistered else {
+    guard authManager.currentUserId != nil else {
       return
     }
 

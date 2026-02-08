@@ -84,11 +84,7 @@ struct PushedWatchApp: App {
 
     pushDelegate.onTokenUpdated = { token in
       Task { @MainActor in
-        if registrationManager.isRegistered {
-          try? await registrationManager.updateToken(token)
-        } else {
-          try? await registrationManager.registerDevice()
-        }
+        try? await registrationManager.registerDevice()
       }
     }
   }

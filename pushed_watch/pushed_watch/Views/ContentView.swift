@@ -10,7 +10,12 @@ import SwiftUI
 struct ContentView: View {
 
   @Environment(NotificationViewModel.self) private var viewModel
+  @Environment(AuthManager.self) private var authManager
+  @Environment(DeviceRegistrationManager.self) private var registrationManager
+
   @State private var showClearConfirmation = false
+  @State private var showLogoutConfirmation = false
+  @State private var showOptions = false
 
   var body: some View {
     NavigationStack {
@@ -36,17 +41,37 @@ struct ContentView: View {
           }
         }
 
-        if !viewModel.notifications.isEmpty {
-          ToolbarItem(placement: .topBarTrailing) {
-            Button(role: .destructive) {
-              showClearConfirmation = true
-            } label: {
-              Label("Clear All", systemImage: "trash")
-            }
+        ToolbarItem(placement: .topBarTrailing) {
+          Button {
+            showOptions = true
+          } label: {
+            Label("Options", systemImage: "ellipsis.circle")
           }
         }
       }
 
+    }
+    .confirmationDialog(
+      "Options",
+      isPresented: $showOptions,
+      titleVisibility: .visible
+    ) {
+      Button("Sign Out", role: .destructive) {
+        // Small delay to allow the options dialog to dismiss
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+          showLogoutConfirmation = true
+        }
+      }
+
+      if !viewModel.notifications.isEmpty {
+        Button("Clear All", role: .destructive) {
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showClearConfirmation = true
+          }
+        }
+      }
+
+      Button("Cancel", role: .cancel) {}
     }
     .confirmationDialog(
       "Clear All Notifications?",
@@ -55,6 +80,16 @@ struct ContentView: View {
     ) {
       Button("Clear All", role: .destructive) {
         viewModel.clearAll()
+      }
+      Button("Cancel", role: .cancel) {}
+    }
+    .confirmationDialog(
+      "Sign Out?",
+      isPresented: $showLogoutConfirmation,
+      titleVisibility: .visible
+    ) {
+      Button("Sign Out", role: .destructive) {
+        logout()
       }
       Button("Cancel", role: .cancel) {}
     }
@@ -86,6 +121,20 @@ struct ContentView: View {
   private func refreshNotifications() {
     Task {
       await viewModel.refreshNotifications()
+    }
+  }
+
+  private func logout() {
+    Task {
+      // Attempt to unregister device (ignore errors to ensure logout happens)
+      try? await registrationManager.unregisterDevice()
+
+      // Sign out locally
+      do {
+        try authManager.signOut()
+      } catch {
+        print("Error signing out: \(error.localizedDescription)")
+      }
     }
   }
 }
@@ -274,9 +323,17 @@ private struct EmptyStateView: View {
 #Preview("Content View - Empty") {
   ContentView()
     .environment(NotificationViewModel.previewInstance)
+    .environment(AuthManager())
+    .environment(
+      DeviceRegistrationManager(
+        authManager: AuthManager(), pushDelegate: PushNotificationDelegate()))
 }
 
 #Preview("Content View - With Notifications") {
   ContentView()
     .environment(NotificationViewModel.previewInstanceWithMultipleNotifications)
+    .environment(AuthManager())
+    .environment(
+      DeviceRegistrationManager(
+        authManager: AuthManager(), pushDelegate: PushNotificationDelegate()))
 }

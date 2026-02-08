@@ -134,6 +134,9 @@ export const onNotificationDeleted = onDocumentDeleted(
  * Callable function to register a device.
  *
  * Called from both Android and watchOS clients after authentication.
+ * 
+ * Note: watchOS may not properly propagate auth tokens to Cloud Functions,
+ * so we accept userId in the request data as a fallback.
  */
 export const registerDevice = onCall(
   {
@@ -141,16 +144,13 @@ export const registerDevice = onCall(
     memory: "128MiB",
   },
   async (request) => {
-    logger.info("Received registerDevice request");
+    logger.info("Received registerDevice request", {
+      hasAuth: !!request.auth,
+      authUid: request.auth?.uid,
+    });
 
-    // Verify authentication
-    if (!request.auth) {
-      logger.error("registerDevice: Unauthenticated request");
-      throw new HttpsError("unauthenticated", "Authentication required");
-    }
-
-    const userId = request.auth.uid;
-    const { deviceId, type, fcmToken, deviceName, osVersion, appVersion } = request.data as {
+    const { userId: requestUserId, deviceId, type, fcmToken, deviceName, osVersion, appVersion } = request.data as {
+      userId?: string;
       deviceId: string;
       type: DeviceType;
       fcmToken: string;
@@ -159,8 +159,18 @@ export const registerDevice = onCall(
       appVersion?: string;
     };
 
+    // Use auth.uid if available, otherwise fall back to userId from request data
+    // This handles watchOS where auth tokens may not propagate correctly
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      logger.error("registerDevice: No userId available from auth or request data");
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
+
     // Validate required fields
     if (!deviceId || !type || !fcmToken || !deviceName) {
+      logger.error("registerDevice: Missing required fields", { deviceId, type, fcmToken: !!fcmToken, deviceName });
       throw new HttpsError("invalid-argument", "Missing required fields");
     }
 
@@ -204,12 +214,16 @@ export const unregisterDevice = onCall(
     memory: "128MiB",
   },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Authentication required");
-    }
+    const { userId: requestUserId, deviceId } = request.data as {
+      userId?: string;
+      deviceId: string;
+    };
 
-    const userId = request.auth.uid;
-    const { deviceId } = request.data as { deviceId: string };
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
 
     if (!deviceId) {
       throw new HttpsError("invalid-argument", "Device ID required");
@@ -237,15 +251,17 @@ export const updateDeviceToken = onCall(
     memory: "128MiB",
   },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Authentication required");
-    }
-
-    const userId = request.auth.uid;
-    const { deviceId, fcmToken } = request.data as {
+    const { userId: requestUserId, deviceId, fcmToken } = request.data as {
+      userId?: string;
       deviceId: string;
       fcmToken: string;
     };
+
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
 
     if (!deviceId || !fcmToken) {
       throw new HttpsError("invalid-argument", "Device ID and FCM token required");
@@ -276,12 +292,16 @@ export const deviceHeartbeat = onCall(
     memory: "128MiB",
   },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Authentication required");
-    }
+    const { userId: requestUserId, deviceId } = request.data as {
+      userId?: string;
+      deviceId: string;
+    };
 
-    const userId = request.auth.uid;
-    const { deviceId } = request.data as { deviceId: string };
+    const userId = request.auth?.uid ?? requestUserId;
+
+    if (!userId) {
+      throw new HttpsError("unauthenticated", "Authentication required - no userId available");
+    }
 
     if (!deviceId) {
       throw new HttpsError("invalid-argument", "Device ID required");

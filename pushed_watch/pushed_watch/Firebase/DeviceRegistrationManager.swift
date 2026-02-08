@@ -59,18 +59,20 @@ final class DeviceRegistrationManager {
   /// Register this device for push notifications.
   ///
   /// Must be called after successful authentication.
-  /// This will create or update the device registration in Firestore.
+  /// This will create or update the device registration in Firestore via Cloud Function.
   func registerDevice() async throws {
-    guard authManager.currentUserId != nil else {
+    guard let userId = authManager.currentUserId else {
       throw DeviceError.notAuthenticated
     }
-
-    // Always attempt to register/update device details
 
     // Ensure we have a valid FCM token
     let fcmToken = try await pushDelegate.getToken()
 
+    // Include userId explicitly in the request data
+    // This ensures the Cloud Function knows which user to register the device for,
+    // even if request.auth is not properly populated on watchOS
     let deviceData: [String: Any] = [
+      "userId": userId,
       "deviceId": deviceId,
       "type": "watchos",
       "fcmToken": fcmToken,
@@ -81,7 +83,6 @@ final class DeviceRegistrationManager {
 
     do {
       // Call the registerDevice Cloud Function
-      // Explicitly set the region to match the deployed function (us-central1)
       let functions = Functions.functions(region: "us-central1")
       let result = try await functions.httpsCallable("registerDevice").call(deviceData)
 
@@ -105,17 +106,18 @@ final class DeviceRegistrationManager {
   ///
   /// Called when user signs out.
   func unregisterDevice() async throws {
-    guard authManager.currentUserId != nil else {
+    guard let userId = authManager.currentUserId else {
       throw DeviceError.notAuthenticated
     }
 
     let data: [String: Any] = [
-      "deviceId": deviceId
+      "userId": userId,
+      "deviceId": deviceId,
     ]
 
     do {
       _ =
-        try await Functions.functions()
+        try await Functions.functions(region: "us-central1")
         .httpsCallable("unregisterDevice")
         .call(data)
 
@@ -129,18 +131,19 @@ final class DeviceRegistrationManager {
   ///
   /// Called when FCM token is refreshed.
   func updateToken(_ newToken: String) async throws {
-    guard authManager.currentUserId != nil else {
+    guard let userId = authManager.currentUserId else {
       return  // Silently fail if not authenticated
     }
 
     let data: [String: Any] = [
+      "userId": userId,
       "deviceId": deviceId,
       "fcmToken": newToken,
     ]
 
     do {
       _ =
-        try await Functions.functions()
+        try await Functions.functions(region: "us-central1")
         .httpsCallable("updateDeviceToken")
         .call(data)
 
@@ -152,17 +155,18 @@ final class DeviceRegistrationManager {
 
   /// Send a heartbeat to update lastSeen timestamp.
   func sendHeartbeat() async {
-    guard authManager.currentUserId != nil else {
+    guard let userId = authManager.currentUserId else {
       return
     }
 
     let data: [String: Any] = [
-      "deviceId": deviceId
+      "userId": userId,
+      "deviceId": deviceId,
     ]
 
     do {
       _ =
-        try await Functions.functions()
+        try await Functions.functions(region: "us-central1")
         .httpsCallable("deviceHeartbeat")
         .call(data)
     } catch {

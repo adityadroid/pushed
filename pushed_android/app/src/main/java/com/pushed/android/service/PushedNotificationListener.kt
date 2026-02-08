@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.pushed.android.data.model.NotificationAction
 import com.pushed.android.data.model.NotificationCategory
 import com.pushed.android.data.model.NotificationPriority
@@ -62,10 +63,7 @@ class PushedNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         super.onNotificationPosted(sbn)
-        Log.d(
-            TAG,
-            "Got a new  notification $sbn"
-        )
+        Log.d(TAG, "Got a new  notification $sbn")
         // Skip our own notifications to avoid loops
         if (sbn.packageName == packageName) {
             Log.v(TAG, "Skipping self-notification from $packageName")
@@ -156,14 +154,40 @@ class PushedNotificationListener : NotificationListenerService() {
         val notification = sbn.notification
         val extras = notification.extras
 
-        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-        val body = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
+        var title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+        var body = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
         val subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString()
 
         // Get conversation info if available
-        val conversationTitle =
+        var conversationTitle =
                 extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString()
-        val senderName = notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
+        var senderName = notification.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
+
+        // Try to extract rich data from MessagingStyle
+        val messagingStyle =
+                NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(
+                        notification
+                )
+        if (messagingStyle != null) {
+            // Update conversation title from style if available
+            if (!messagingStyle.conversationTitle.isNullOrEmpty()) {
+                conversationTitle = messagingStyle.conversationTitle.toString()
+                // For group chats, the title is usually the conversation title
+                title = conversationTitle ?: title
+            }
+
+            // Get the latest message
+            val messages = messagingStyle.messages
+            if (messages.isNotEmpty()) {
+                val lastMessage = messages.last()
+                // Update body with the actual message text
+                if (!lastMessage.text.isNullOrEmpty()) {
+                    body = lastMessage.text.toString()
+                }
+                // Update sender name from the person in the last message
+                lastMessage.person?.name?.let { senderName = it.toString() }
+            }
+        }
 
         return PushedNotification(
                 id = generateStableId(sbn),

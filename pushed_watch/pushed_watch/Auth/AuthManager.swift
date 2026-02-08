@@ -1,5 +1,9 @@
 import FirebaseAuth
 import Foundation
+import os.log
+
+/// Logger for authentication
+private let logger = Logger(subsystem: "com.pushed.watch", category: "Auth")
 
 /// Manager for Firebase Authentication on watchOS.
 ///
@@ -15,16 +19,26 @@ final class AuthManager {
   // MARK: - State
 
   /// Current authentication state
-  var authState: AuthState = .loading
+  var authState: AuthState = .loading {
+    didSet {
+      logger.info(
+        "🔐 authState changed: \(String(describing: oldValue)) -> \(String(describing: self.authState))"
+      )
+    }
+  }
 
   /// Current user ID if authenticated
   var currentUserId: String? {
-    Auth.auth().currentUser?.uid
+    let uid = Auth.auth().currentUser?.uid
+    logger.debug("🔐 currentUserId accessed: \(uid ?? "nil")")
+    return uid
   }
 
   /// Whether user is currently authenticated
   var isAuthenticated: Bool {
-    Auth.auth().currentUser != nil
+    let authenticated = Auth.auth().currentUser != nil
+    logger.debug("🔐 isAuthenticated accessed: \(authenticated)")
+    return authenticated
   }
 
   /// Current user's email
@@ -44,7 +58,11 @@ final class AuthManager {
   // MARK: - Initialization
 
   init() {
+    logger.info("🔧 AuthManager initializing...")
+    logger.info(
+      "🔐 Firebase Auth.auth().currentUser on init: \(Auth.auth().currentUser?.uid ?? "nil")")
     setupAuthStateListener()
+    logger.info("🔧 AuthManager initialized")
   }
 
   deinit {
@@ -62,10 +80,15 @@ final class AuthManager {
   ///   - password: User's password
   /// - Returns: The authenticated user's UID
   func signIn(email: String, password: String) async throws -> String {
+    logger.info("🔐 signIn() called with email: \(email)")
     do {
       let result = try await Auth.auth().signIn(withEmail: email, password: password)
+      logger.info("✅ signIn() successful - uid: \(result.user.uid)")
+      logger.info("   email: \(result.user.email ?? "nil")")
+      logger.info("   displayName: \(result.user.displayName ?? "nil")")
       return result.user.uid
     } catch {
+      logger.error("❌ signIn() failed: \(error.localizedDescription)")
       throw AuthError.signInFailed(error.localizedDescription)
     }
   }
@@ -77,19 +100,25 @@ final class AuthManager {
   ///   - password: User's password
   /// - Returns: The created user's UID
   func createAccount(email: String, password: String) async throws -> String {
+    logger.info("🔐 createAccount() called with email: \(email)")
     do {
       let result = try await Auth.auth().createUser(withEmail: email, password: password)
+      logger.info("✅ createAccount() successful - uid: \(result.user.uid)")
       return result.user.uid
     } catch {
+      logger.error("❌ createAccount() failed: \(error.localizedDescription)")
       throw AuthError.accountCreationFailed(error.localizedDescription)
     }
   }
 
   /// Sign out the current user.
   func signOut() throws {
+    logger.info("🔐 signOut() called")
     do {
       try Auth.auth().signOut()
+      logger.info("✅ signOut() successful")
     } catch {
+      logger.error("❌ signOut() failed: \(error.localizedDescription)")
       throw AuthError.signOutFailed(error.localizedDescription)
     }
   }
@@ -98,44 +127,64 @@ final class AuthManager {
   ///
   /// - Parameter email: User's email address
   func sendPasswordReset(to email: String) async throws {
+    logger.info("🔐 sendPasswordReset() called for email: \(email)")
     do {
       try await Auth.auth().sendPasswordReset(withEmail: email)
+      logger.info("✅ Password reset email sent")
     } catch {
+      logger.error("❌ sendPasswordReset() failed: \(error.localizedDescription)")
       throw AuthError.passwordResetFailed(error.localizedDescription)
     }
   }
 
   /// Reload current user's profile.
   func reloadUser() async throws {
+    logger.info("🔐 reloadUser() called")
     guard let user = Auth.auth().currentUser else {
+      logger.error("❌ reloadUser() failed: No current user")
       throw AuthError.notAuthenticated
     }
 
     try await user.reload()
     updateAuthState()
+    logger.info("✅ User reloaded successfully")
   }
 
   // MARK: - Private Methods
 
   private func setupAuthStateListener() {
+    logger.info("🔐 Setting up auth state listener...")
     authStateListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+      logger.info("🔔 Auth state listener fired!")
+      logger.info("   user: \(user?.uid ?? "nil")")
+      logger.info("   email: \(user?.email ?? "nil")")
       self?.handleAuthStateChange(user: user)
     }
+    logger.info("🔐 Auth state listener set up")
   }
 
   private func handleAuthStateChange(user: User?) {
+    logger.info("🔐 handleAuthStateChange() called")
+    logger.info("   user: \(user?.uid ?? "nil")")
+
     if let user {
+      logger.info("✅ User is authenticated")
+      logger.info("   uid: \(user.uid)")
+      logger.info("   email: \(user.email ?? "nil")")
+      logger.info("   displayName: \(user.displayName ?? "nil")")
       authState = .authenticated(
         userId: user.uid,
         email: user.email,
         displayName: user.displayName
       )
     } else {
+      logger.info("⚠️ User is NOT authenticated")
       authState = .unauthenticated
     }
   }
 
   private func updateAuthState() {
+    logger.info("🔐 updateAuthState() called")
     handleAuthStateChange(user: Auth.auth().currentUser)
   }
 }

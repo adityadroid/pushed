@@ -4,6 +4,10 @@ import Foundation
 import UIKit
 import UserNotifications
 import WatchKit
+import os.log
+
+/// Logger for push notifications
+private let pushLogger = Logger(subsystem: "com.pushed.watch", category: "PushNotification")
 
 /// Delegate for handling Firebase Cloud Messaging on watchOS.
 ///
@@ -15,7 +19,11 @@ final class PushNotificationDelegate: NSObject, ObservableObject {
 
   // MARK: - Published State
 
-  @Published var fcmToken: String?
+  @Published var fcmToken: String? {
+    didSet {
+      pushLogger.info("🔑 fcmToken updated: \(self.fcmToken?.prefix(20) ?? "nil")...")
+    }
+  }
   @Published var lastReceivedNotification: PushedNotification?
 
   // MARK: - Callbacks
@@ -35,35 +43,49 @@ final class PushNotificationDelegate: NSObject, ObservableObject {
   // MARK: - Initialization
 
   override init() {
+    pushLogger.info("🔧 PushNotificationDelegate init() starting...")
     super.init()
     setupMessaging()
     requestNotificationPermissions()
+    pushLogger.info("✅ PushNotificationDelegate init() complete")
   }
 
   // MARK: - Setup
 
   private func setupMessaging() {
+    pushLogger.info("🔧 setupMessaging() called")
     Messaging.messaging().delegate = self
+    pushLogger.info("✅ Set as Messaging delegate")
 
     // Get initial token
     Task {
+      pushLogger.info("🔑 Fetching initial FCM token...")
       await fetchFCMToken()
     }
   }
 
   private func requestNotificationPermissions() {
+    pushLogger.info("🔔 requestNotificationPermissions() called")
     let center = UNUserNotificationCenter.current()
     center.delegate = self
 
     Task {
       do {
+        pushLogger.info("🔔 Requesting notification authorization...")
         let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+        pushLogger.info("🔔 Notification permission granted: \(granted)")
         if granted {
           await MainActor.run {
+            pushLogger.info("📱 Registering for remote notifications...")
             WKExtension.shared().registerForRemoteNotifications()
+            pushLogger.info("✅ Registered for remote notifications")
           }
+        } else {
+          pushLogger.warning("⚠️ Notification permission denied by user")
         }
       } catch {
+        pushLogger.error(
+          "❌ Failed to request notification permissions: \(error.localizedDescription)")
         print("Failed to request notification permissions: \(error)")
       }
     }
@@ -71,26 +93,88 @@ final class PushNotificationDelegate: NSObject, ObservableObject {
 
   // MARK: - Token Management
 
+  /// Mock token prefix for development without APNs
+  private static let mockTokenPrefix = "MOCK_FCM_TOKEN_"
+
+  /// Whether we're using a mock token (APNs not available)
+  var isUsingMockToken: Bool {
+    fcmToken?.hasPrefix(Self.mockTokenPrefix) ?? false
+  }
+
+  /// Generate a mock FCM token for development
+  private func generateMockToken() -> String {
+    // Use device ID to make it consistent across app launches
+    let deviceId = UserDefaults.standard.string(forKey: "pushed_device_id") ?? UUID().uuidString
+    return "\(Self.mockTokenPrefix)\(deviceId)"
+  }
+
   func fetchFCMToken() async {
+    pushLogger.info("🔑 fetchFCMToken() called")
     do {
       let token = try await Messaging.messaging().token()
+      pushLogger.info("✅ Got FCM token: \(token.prefix(20))...")
       self.fcmToken = token
       print("FCM Token: \(token)")
+
+      pushLogger.info("📞 Calling onTokenUpdated callback...")
       onTokenUpdated?(token)
+      pushLogger.info("✅ onTokenUpdated callback completed")
     } catch {
+      pushLogger.error("❌ Failed to fetch FCM token: \(error.localizedDescription)")
       print("Failed to fetch FCM token: \(error)")
+
+      // Check if this is the "No APNS token" error - use mock token for development
+      let nsError = error as NSError
+      if nsError.domain == "com.google.fcm" && nsError.code == 505 {
+        pushLogger.warning("⚠️ APNs not available (no paid developer account?)")
+        pushLogger.warning(
+          "⚠️ Using MOCK FCM token for development - push notifications will NOT work!")
+
+        let mockToken = generateMockToken()
+        self.fcmToken = mockToken
+        pushLogger.info("🔑 Generated mock token: \(mockToken.prefix(30))...")
+
+        pushLogger.info("📞 Calling onTokenUpdated callback with mock token...")
+        onTokenUpdated?(mockToken)
+        pushLogger.info("✅ onTokenUpdated callback completed")
+      }
     }
   }
 
   /// Get the current FCM token.
+  /// Returns a mock token if APNs is not available (for development without paid Apple Developer account).
   func getToken() async throws -> String {
+    pushLogger.info("🔑 getToken() called")
     if let token = fcmToken {
+      if token.hasPrefix(Self.mockTokenPrefix) {
+        pushLogger.warning("⚠️ Returning MOCK FCM token - push notifications will NOT work!")
+      } else {
+        pushLogger.info("✅ Returning cached FCM token: \(token.prefix(20))...")
+      }
       return token
     }
 
-    let token = try await Messaging.messaging().token()
-    self.fcmToken = token
-    return token
+    pushLogger.info("🔑 No cached token - fetching from Firebase...")
+    do {
+      let token = try await Messaging.messaging().token()
+      pushLogger.info("✅ Got FCM token: \(token.prefix(20))...")
+      self.fcmToken = token
+      return token
+    } catch {
+      // Check if this is the "No APNS token" error - use mock token for development
+      let nsError = error as NSError
+      if nsError.domain == "com.google.fcm" && nsError.code == 505 {
+        pushLogger.warning("⚠️ APNs not available - generating mock token for development")
+        pushLogger.warning(
+          "⚠️ Push notifications will NOT work without a paid Apple Developer account!")
+
+        let mockToken = generateMockToken()
+        self.fcmToken = mockToken
+        pushLogger.info("🔑 Using mock token: \(mockToken.prefix(30))...")
+        return mockToken
+      }
+      throw error
+    }
   }
 }
 
@@ -100,13 +184,20 @@ extension PushNotificationDelegate: MessagingDelegate {
 
   nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?)
   {
-    guard let token = fcmToken else { return }
+    guard let token = fcmToken else {
+      pushLogger.warning("⚠️ messaging:didReceiveRegistrationToken called with nil token")
+      return
+    }
 
+    pushLogger.info("🔑 FCM token refreshed: \(token.prefix(20))...")
     print("FCM token refreshed: \(token)")
 
     Task { @MainActor in
+      pushLogger.info("🔑 Updating stored FCM token...")
       self.fcmToken = token
+      pushLogger.info("📞 Calling onTokenUpdated callback...")
       self.onTokenUpdated?(token)
+      pushLogger.info("✅ Token update complete")
     }
   }
 }

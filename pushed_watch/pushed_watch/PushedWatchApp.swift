@@ -1,6 +1,10 @@
 import FirebaseCore
 import SwiftData
 import SwiftUI
+import os.log
+
+/// Logger for app-level events
+private let appLogger = Logger(subsystem: "com.pushed.watch", category: "App")
 
 /// Main entry point for the Pushed watchOS app.
 ///
@@ -21,13 +25,25 @@ struct PushedWatchApp: App {
   // MARK: - Initialization
 
   init() {
+    appLogger.info("🚀 PushedWatchApp init() starting...")
+
     // Configure Firebase on app launch
+    appLogger.info("🔥 Configuring Firebase...")
     FirebaseConfiguration.shared.configure()
+    appLogger.info("✅ Firebase configured")
 
+    appLogger.info("🔧 Creating AuthManager...")
     let authManager = AuthManager()
-    let pushDelegate = PushNotificationDelegate()
+    appLogger.info("✅ AuthManager created")
 
+    appLogger.info("🔧 Creating PushNotificationDelegate...")
+    let pushDelegate = PushNotificationDelegate()
+    appLogger.info("✅ PushNotificationDelegate created")
+
+    appLogger.info("🔧 Creating ModelContainer...")
     let container = try! ModelContainer(for: StoredNotification.self)
+    appLogger.info("✅ ModelContainer created")
+
     let store = NotificationStore(modelContext: container.mainContext)
     let syncService = NotificationSyncService(
       deviceIdProvider: {
@@ -38,16 +54,21 @@ struct PushedWatchApp: App {
       syncService: syncService,
       notificationStore: store
     )
+
+    appLogger.info("🔧 Creating DeviceRegistrationManager...")
     let registrationManager = DeviceRegistrationManager(
       authManager: authManager,
       pushDelegate: pushDelegate
     )
+    appLogger.info("✅ DeviceRegistrationManager created")
 
     _authManager = State(initialValue: authManager)
     _pushDelegate = State(initialValue: pushDelegate)
     _viewModel = State(initialValue: viewModel)
     _registrationManager = State(initialValue: registrationManager)
     modelContainer = container
+
+    appLogger.info("✅ PushedWatchApp init() complete")
   }
 
   // MARK: - Body
@@ -61,6 +82,7 @@ struct PushedWatchApp: App {
         .environmentObject(pushDelegate)
         .modelContainer(modelContainer)
         .onAppear {
+          appLogger.info("📱 RootView appeared - setting up notification handling")
           setupNotificationHandling()
         }
     }
@@ -69,24 +91,38 @@ struct PushedWatchApp: App {
   // MARK: - Private Methods
 
   private func setupNotificationHandling() {
+    appLogger.info("🔧 setupNotificationHandling() called")
+
     // Wire up notification handling to view model
     pushDelegate.onNotificationReceived = { notification in
+      appLogger.info("📩 onNotificationReceived callback triggered")
       Task { @MainActor in
         viewModel.addNotification(notification)
       }
     }
 
     pushDelegate.onNotificationDeleted = { notificationId in
+      appLogger.info("🗑️ onNotificationDeleted callback triggered: \(notificationId)")
       Task { @MainActor in
         viewModel.removeNotification(withId: notificationId)
       }
     }
 
     pushDelegate.onTokenUpdated = { token in
+      appLogger.info("🔑 onTokenUpdated callback triggered - token: \(token.prefix(20))...")
+      appLogger.info("   Triggering device registration...")
       Task { @MainActor in
-        try? await registrationManager.registerDevice()
+        do {
+          try await registrationManager.registerDevice()
+          appLogger.info("✅ Device registration from onTokenUpdated succeeded")
+        } catch {
+          appLogger.error(
+            "❌ Device registration from onTokenUpdated failed: \(error.localizedDescription)")
+        }
       }
     }
+
+    appLogger.info("✅ Notification handling set up")
   }
 }
 
@@ -102,35 +138,67 @@ struct RootView: View {
       switch authManager.authState {
       case .loading:
         ProgressView("Loading...")
+          .onAppear {
+            appLogger.info("📱 Showing loading state")
+          }
 
       case .unauthenticated:
         LoginView()
+          .onAppear {
+            appLogger.info("📱 Showing login view - user not authenticated")
+          }
 
-      case .authenticated:
+      case .authenticated(let userId, let email, _):
         ContentView()
+          .onAppear {
+            appLogger.info("📱 Showing content view - user authenticated")
+            appLogger.info("   userId: \(userId)")
+            appLogger.info("   email: \(email ?? "nil")")
+          }
       }
     }
     .animation(.easeInOut, value: authManager.authState)
     .task {
+      appLogger.info("📱 RootView .task triggered - calling registerDeviceIfNeeded()")
       await registerDeviceIfNeeded()
     }
-    .onChange(of: authManager.authState) { _, newState in
-      if case .authenticated = newState {
+    .onChange(of: authManager.authState) { oldState, newState in
+      appLogger.info(
+        "🔔 authState changed: \(String(describing: oldState)) -> \(String(describing: newState))")
+      if case .authenticated(let userId, _, _) = newState {
+        appLogger.info("   User is now authenticated with userId: \(userId)")
+        appLogger.info("   Triggering registerDeviceIfNeeded()...")
         Task { await registerDeviceIfNeeded() }
       }
     }
-    .onChange(of: scenePhase) { _, newPhase in
+    .onChange(of: scenePhase) { oldPhase, newPhase in
+      appLogger.info(
+        "🔔 scenePhase changed: \(String(describing: oldPhase)) -> \(String(describing: newPhase))")
       if newPhase == .active {
+        appLogger.info("   App became active - triggering registerDeviceIfNeeded()")
         Task { await registerDeviceIfNeeded() }
       }
     }
   }
 
   private func registerDeviceIfNeeded() async {
-    guard authManager.isAuthenticated else { return }
+    appLogger.info("🔄 registerDeviceIfNeeded() called")
+    appLogger.info("   authManager.isAuthenticated = \(authManager.isAuthenticated)")
+    appLogger.info("   authManager.currentUserId = \(authManager.currentUserId ?? "nil")")
+    appLogger.info("   authManager.authState = \(String(describing: authManager.authState))")
+
+    guard authManager.isAuthenticated else {
+      appLogger.info("⚠️ User not authenticated - skipping registration")
+      return
+    }
+
+    appLogger.info("✅ User is authenticated - proceeding with registration")
+
     do {
       try await registrationManager.registerDevice()
+      appLogger.info("✅ registerDeviceIfNeeded() completed successfully")
     } catch {
+      appLogger.error("❌ registerDeviceIfNeeded() failed: \(error.localizedDescription)")
       registrationManager.lastError = error
     }
   }
